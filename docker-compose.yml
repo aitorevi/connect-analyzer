@@ -1,0 +1,26 @@
+services:
+  sap-mock:
+    build: ./sap-mock
+    container_name: sap-mock
+    ports:
+      - "8000:80"
+
+  backend:
+    build: ./backend
+    container_name: sap-backend
+    ports:
+      - "5080:8080"
+    environment:
+      - SapMock__BaseUrl=http://sap-mock
+    depends_on:
+      - sap-mock
+
+  frontend:
+    build: ./frontend
+    container_name: sap-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - BACKEND_URL=http://backend:8080
+    depends_on:
+      - backend
