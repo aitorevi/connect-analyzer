@@ -19,7 +19,7 @@ builder.Services.AddCors(options =>
               .AllowAnyMethod());
 });
 
-var sapMockBaseUrl = builder.Configuration["SapMock:BaseUrl"] ?? "http://sap-mock";
+var sapMockBaseUrl = builder.Configuration["SapMock:BaseUrl"] ?? "http://sap-mock:8080";
 builder.Services.AddHttpClient<ISalesRepository, MockTxtSalesRepository>(client =>
 {
     client.BaseAddress = new Uri(sapMockBaseUrl);

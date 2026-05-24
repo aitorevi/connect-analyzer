@@ -10,4 +10,6 @@ WORKDIR /app
 COPY --from=build /app ./
 ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
+# Run as the image's built-in non-root user instead of root.
+USER $APP_UID
 ENTRYPOINT ["dotnet", "SapAnalytics.dll"]
