@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text;
+using SapAnalytics.Domain;
 using SapAnalytics.Infrastructure.Outbound.MockTxt;
 using Xunit;
 
@@ -16,15 +17,15 @@ public class MockTxtSalesRepositoryTests
             "20260103|C002|Té Verde|5|42.75\n";
         var sut = CreateSut(Latin1Bytes(text));
 
-        var result = await sut.SearchAsync();
+        var sales = await SearchSucceeding(sut);
 
-        Assert.Equal(2, result.Count);
-        Assert.Equal(new DateOnly(2026, 1, 2), result[0].Date);
-        Assert.Equal("C001", result[0].CustomerId);
-        Assert.Equal("Café Molido", result[0].ProductName);
-        Assert.Equal(10, result[0].Quantity);
-        Assert.Equal(125.50m, result[0].Amount);
-        Assert.Equal("Té Verde", result[1].ProductName);
+        Assert.Equal(2, sales.Count);
+        Assert.Equal(new DateOnly(2026, 1, 2), sales[0].Date);
+        Assert.Equal("C001", sales[0].CustomerId);
+        Assert.Equal("Café Molido", sales[0].ProductName);
+        Assert.Equal(10, sales[0].Quantity);
+        Assert.Equal(125.50m, sales[0].Amount);
+        Assert.Equal("Té Verde", sales[1].ProductName);
     }
 
     [Fact]
@@ -39,11 +40,11 @@ public class MockTxtSalesRepositoryTests
             "  \n";
         var sut = CreateSut(Latin1Bytes(text));
 
-        var result = await sut.SearchAsync();
+        var sales = await SearchSucceeding(sut);
 
-        Assert.Equal(2, result.Count);
-        Assert.Equal("Product A", result[0].ProductName);
-        Assert.Equal("Product B", result[1].ProductName);
+        Assert.Equal(2, sales.Count);
+        Assert.Equal("Product A", sales[0].ProductName);
+        Assert.Equal("Product B", sales[1].ProductName);
     }
 
     [Fact]
@@ -52,9 +53,9 @@ public class MockTxtSalesRepositoryTests
         const string text = "DATE|CUSTOMER_ID|PRODUCT_NAME|QUANTITY|AMOUNT\n";
         var sut = CreateSut(Latin1Bytes(text));
 
-        var result = await sut.SearchAsync();
+        var sales = await SearchSucceeding(sut);
 
-        Assert.Empty(result);
+        Assert.Empty(sales);
     }
 
     [Fact]
@@ -69,21 +70,48 @@ public class MockTxtSalesRepositoryTests
             "20260105|C005|Also valid|2|20.00\n";
         var sut = CreateSut(Latin1Bytes(text));
 
-        var result = await sut.SearchAsync();
+        var sales = await SearchSucceeding(sut);
 
-        Assert.Equal(2, result.Count);
-        Assert.Equal("Valid", result[0].ProductName);
-        Assert.Equal("Also valid", result[1].ProductName);
+        Assert.Equal(2, sales.Count);
+        Assert.Equal("Valid", sales[0].ProductName);
+        Assert.Equal("Also valid", sales[1].ProductName);
     }
 
     [Theory]
     [InlineData(HttpStatusCode.NotFound)]
     [InlineData(HttpStatusCode.InternalServerError)]
-    public async Task ThrowsWhenMockReturnsHttpError(HttpStatusCode status)
+    public async Task ReturnsUnavailableFailureWhenSourceReturnsHttpError(HttpStatusCode status)
     {
         var sut = CreateSut(Latin1Bytes("ignored"), status);
 
-        await Assert.ThrowsAsync<HttpRequestException>(() => sut.SearchAsync());
+        var result = await sut.SearchAsync();
+
+        Assert.Equal(ErrorType.Unavailable, FailureError(result).Type);
+    }
+
+    [Fact]
+    public async Task ReturnsUnavailableFailureWhenSourceIsUnreachable()
+    {
+        // Simulates a network-level failure (DNS, connection refused, reset): the handler
+        // itself throws HttpRequestException before any response exists.
+        var http = new HttpClient(new ThrowingHandler())
+        {
+            BaseAddress = new Uri("http://test-host/")
+        };
+        var sut = new MockTxtSalesRepository(http);
+
+        var result = await sut.SearchAsync();
+
+        Assert.Equal(ErrorType.Unavailable, FailureError(result).Type);
+    }
+
+    [Fact]
+    public async Task PropagatesCancellationInsteadOfWrappingItAsFailure()
+    {
+        var sut = CreateSut(Latin1Bytes("ignored"));
+        var cancelled = new CancellationToken(canceled: true);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => sut.SearchAsync(cancelled));
     }
 
     [Fact]
@@ -94,11 +122,24 @@ public class MockTxtSalesRepositoryTests
             "20260101|C001|X|1|1234.56\n";
         var sut = CreateSut(Latin1Bytes(text));
 
-        var result = await sut.SearchAsync();
+        var sales = await SearchSucceeding(sut);
 
-        Assert.Single(result);
-        Assert.Equal(1234.56m, result[0].Amount);
+        Assert.Single(sales);
+        Assert.Equal(1234.56m, sales[0].Amount);
     }
+
+    private static async Task<IReadOnlyList<Sale>> SearchSucceeding(MockTxtSalesRepository sut)
+    {
+        var result = await sut.SearchAsync();
+        return result.Match(
+            sales => sales,
+            error => throw new Xunit.Sdk.XunitException($"expected Success but was Failure: {error.Message}"));
+    }
+
+    private static Error FailureError(Result<IReadOnlyList<Sale>> result) =>
+        result.Match(
+            sales => throw new Xunit.Sdk.XunitException($"expected Failure but was Success with {sales.Count} rows"),
+            error => error);
 
     private static byte[] Latin1Bytes(string s) =>
         Encoding.GetEncoding("ISO-8859-1").GetBytes(s);
@@ -123,5 +164,12 @@ public class MockTxtSalesRepositoryTests
                 StatusCode = status,
                 Content = new ByteArrayContent(bytes),
             });
+    }
+
+    private sealed class ThrowingHandler : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request, CancellationToken ct) =>
+            throw new HttpRequestException("simulated network failure");
     }
 }

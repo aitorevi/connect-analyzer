@@ -96,7 +96,7 @@ public class SalesEndpointsTests(SalesEndpointsTests.Factory factory)
 
     private sealed class FakeSalesRepository : ISalesRepository
     {
-        public Task<IReadOnlyList<Sale>> SearchAsync(CancellationToken ct = default)
+        public Task<Result<IReadOnlyList<Sale>>> SearchAsync(CancellationToken ct = default)
         {
             IReadOnlyList<Sale> sales =
             [
@@ -104,7 +104,7 @@ public class SalesEndpointsTests(SalesEndpointsTests.Factory factory)
                 new(new DateOnly(2026, 1, 2), "C002", "Té Verde", 5, 50m),
                 new(new DateOnly(2026, 1, 3), "C001", "Café Molido", 2, 30m),
             ];
-            return Task.FromResult(sales);
+            return Task.FromResult(Result<IReadOnlyList<Sale>>.Success(sales));
         }
     }
 }

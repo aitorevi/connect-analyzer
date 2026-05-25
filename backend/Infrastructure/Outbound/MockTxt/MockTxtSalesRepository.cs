@@ -10,7 +10,7 @@ namespace SapAnalytics.Infrastructure.Outbound.MockTxt;
 // /sales.txt, that it is ISO-8859-1 encoded, and that the columns are
 // DATE|CUSTOMER_ID|PRODUCT_NAME|QUANTITY|AMOUNT. The mapping from these wire
 // column names to the domain fields of Sale is exactly what an adapter is for.
-public class MockTxtSalesRepository(HttpClient http) : ISalesRepository
+public sealed class MockTxtSalesRepository(HttpClient http) : ISalesRepository
 {
     private const string SalesResourcePath = "/sales.txt";
     private const string Latin1Encoding = "ISO-8859-1";
@@ -25,21 +25,36 @@ public class MockTxtSalesRepository(HttpClient http) : ISalesRepository
     private const int AmountColumn = 4;
     private const int ColumnCount = 5;
 
-    public async Task<IReadOnlyList<Sale>> SearchAsync(CancellationToken ct = default)
+    public async Task<Result<IReadOnlyList<Sale>>> SearchAsync(CancellationToken ct = default)
     {
-        var bytes = await http.GetByteArrayAsync(SalesResourcePath, ct);
-        var latin1 = Encoding.GetEncoding(Latin1Encoding);
-        var text = latin1.GetString(bytes);
+        try
+        {
+            var bytes = await http.GetByteArrayAsync(SalesResourcePath, ct);
+            var latin1 = Encoding.GetEncoding(Latin1Encoding);
+            var text = latin1.GetString(bytes);
 
-        return text.Split('\n')
-            .Skip(1)
-            .Select(l => l.TrimEnd('\r'))
-            .Where(l => !string.IsNullOrWhiteSpace(l))
-            .Select(l => l.Split(FieldDelimiter))
-            .Where(p => p.Length == ColumnCount)
-            .Select(TryParseSale)
-            .OfType<Sale>()
-            .ToList();
+            IReadOnlyList<Sale> sales = text.Split('\n')
+                .Skip(1)
+                .Select(l => l.TrimEnd('\r'))
+                .Where(l => !string.IsNullOrWhiteSpace(l))
+                .Select(l => l.Split(FieldDelimiter))
+                .Where(p => p.Length == ColumnCount)
+                .Select(TryParseSale)
+                .OfType<Sale>()
+                .ToList();
+
+            return Result<IReadOnlyList<Sale>>.Success(sales);
+        }
+        catch (HttpRequestException ex)
+        {
+            // The source being unreachable or returning a non-2xx status is the textbook
+            // "truly exceptional" case: caught here at the edge and translated to a value
+            // so nothing above the adapter has to know about HttpClient.
+            return Result<IReadOnlyList<Sale>>.Failure(
+                Error.Unavailable($"Could not reach the SAP data source: {ex.Message}"));
+        }
+        // OperationCanceledException is intentionally not caught: a cancelled request is a
+        // caller's decision, not a business failure, so it must propagate as the exception.
     }
 
     private static Sale? TryParseSale(string[] parts)
