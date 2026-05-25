@@ -1,9 +1,11 @@
+using SapAnalytics.Application;
 using SapAnalytics.Application.Ports;
 using SapAnalytics.Infrastructure.Outbound.MockTxt;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddScoped<SalesAnalytics>();
 
 // Origins allowed to call the API from the browser. Defaults to the local
 // frontend; override via Cors:AllowedOrigins per environment when deploying.

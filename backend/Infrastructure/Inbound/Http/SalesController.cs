@@ -1,44 +1,33 @@
 using Microsoft.AspNetCore.Mvc;
-using SapAnalytics.Application.Ports;
-using SapAnalytics.Domain;
+using SapAnalytics.Application;
 
 namespace SapAnalytics.Infrastructure.Inbound.Http;
 
-// Inbound adapter: translates HTTP requests into calls against the application port.
-// Aggregation in memory here is temporary; in step 3 it moves to the port so each
-// outbound adapter can push it down to its source (SQL GROUP BY, OData $apply, etc.).
+// Inbound adapter: translates HTTP requests into calls against the application service.
+// This is the only place where a Result is "opened" (via Match): Success -> 200 with the
+// data, Failure -> the error is translated to its HTTP status in one single point.
 [ApiController]
 [Route("api/sales")]
-public class SalesController(ISalesRepository sales) : ControllerBase
+public sealed class SalesController(SalesAnalytics analytics) : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<Sale>>> GetAll(CancellationToken ct)
+    public async Task<IActionResult> GetAll(CancellationToken ct)
     {
-        var result = await sales.SearchAsync(ct);
-        return Ok(result);
+        var result = await analytics.GetAllAsync(ct);
+        return result.Match<IActionResult>(Ok, ErrorHttpResults.ToActionResult);
     }
 
     [HttpGet("by-product")]
-    public async Task<ActionResult> ByProduct(CancellationToken ct)
+    public async Task<IActionResult> ByProduct(CancellationToken ct)
     {
-        var result = await sales.SearchAsync(ct);
-        var aggregate = result
-            .GroupBy(sale => sale.ProductName)
-            .Select(productSales => new { Product = productSales.Key, TotalAmount = productSales.Sum(sale => sale.Amount) })
-            .OrderByDescending(row => row.TotalAmount)
-            .ToList();
-        return Ok(aggregate);
+        var result = await analytics.TotalsByProductAsync(ct);
+        return result.Match<IActionResult>(Ok, ErrorHttpResults.ToActionResult);
     }
 
     [HttpGet("by-customer")]
-    public async Task<ActionResult> ByCustomer(CancellationToken ct)
+    public async Task<IActionResult> ByCustomer(CancellationToken ct)
     {
-        var result = await sales.SearchAsync(ct);
-        var aggregate = result
-            .GroupBy(sale => sale.CustomerId)
-            .Select(customerSales => new { CustomerId = customerSales.Key, TotalAmount = customerSales.Sum(sale => sale.Amount) })
-            .OrderByDescending(row => row.TotalAmount)
-            .ToList();
-        return Ok(aggregate);
+        var result = await analytics.TotalsByCustomerAsync(ct);
+        return result.Match<IActionResult>(Ok, ErrorHttpResults.ToActionResult);
     }
 }
