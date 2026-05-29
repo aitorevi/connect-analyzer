@@ -1,0 +1,39 @@
+# fly.toml for the SAP Analyzer backend.
+#
+# Workflow:
+#   1) cd backend
+#   2) flyctl launch --no-deploy   (accept THIS fly.toml when prompted)
+#   3) flyctl secrets set Sap__ApiKey=<your-key>   (only if you set SalesSource=Sap)
+#   4) flyctl deploy
+#
+# `app` and `primary_region` may need adjusting — Fly app names are globally unique.
+
+app = "sap-analyzer-api"
+primary_region = "mad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  ASPNETCORE_ENVIRONMENT = "Production"
+  # Reach the mock app over Fly's private 6PN network (no public hop, no DNS lookups).
+  SapMock__BaseUrl = "http://sap-analyzer-mock.internal:8080"
+  # Source for ISalesRepository: Mock (default, no secret) or Sap (requires Sap__ApiKey).
+  SalesSource = "Mock"
+  # SQLite file inside the machine's filesystem. Ephemeral across machine recreations;
+  # the seed-on-startup repopulates it from the source on each boot. See DEPLOY.md if
+  # you want a persistent volume instead.
+  Sqlite__Path = "sales.db"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory = "256mb"
