@@ -18,6 +18,11 @@ obj/
 *.sln.docstates
 .vs/
 
+# SQLite local store (generated at runtime by the persistence adapter)
+*.db
+*.db-shm
+*.db-wal
+
 # Node / Next.js (frontend)
 node_modules/
 .next/

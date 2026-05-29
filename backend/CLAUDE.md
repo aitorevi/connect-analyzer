@@ -8,13 +8,21 @@ La dependencia **siempre apunta hacia el dominio**. Capas:
 
 - **`Domain/`** — núcleo puro, sin conocimiento de framework ni infraestructura. Entidades y value
   objects (`Sale`, `ProductTotal`…), y los tipos transversales `Result.cs` / `Error.cs`.
-- **`Application/`** — casos de uso que orquestan el dominio (`SalesAnalytics`).
-  - **`Application/Ports/`** — interfaces (contratos) que el exterior debe implementar (`ISalesRepository`).
+- **`Application/`** — casos de uso que orquestan el dominio: `SalesAnalytics` (consultas) e `IngestSales`
+  (ETL: lee de la fuente y persiste en el almacén).
+  - **`Application/Ports/`** — interfaces que el exterior implementa: `ISalesRepository` (puerto de la
+    **fuente** upstream) e `ISalesStore` (puerto del **almacén** propio).
 - **`Infrastructure/Inbound/Http/`** — adaptador de entrada: controladores que traducen HTTP ↔ aplicación.
-- **`Infrastructure/Outbound/`** — adaptadores de salida hacia fuentes externas. Dos implementaciones del
-  puerto: `MockTxt/MockTxtSalesRepository` (fichero del mock) y `Sap/SapODataSalesRepository` (SAP S/4HANA
-  real vía OData, sandbox del Business Accelerator Hub).
+- **`Infrastructure/Outbound/`** — adaptadores de salida. Fuente: `MockTxt/MockTxtSalesRepository` (fichero
+  del mock) y `Sap/SapODataSalesRepository` (SAP S/4HANA real vía OData, sandbox del Business Accelerator
+  Hub). Almacén: `Sqlite/SqliteSalesStore` (SQLite con SQL a mano, sin ORM).
 - **`Program.cs`** — composición/DI: cablea cada puerto con su adaptador concreto.
+
+### Flujo de datos (dos puertos outbound)
+La fuente y el almacén están desacoplados: `IngestSales` lee de la **fuente** (`ISalesRepository`,
+mock o SAP) y guarda en el **almacén** (`ISalesStore`, SQLite), encadenando con `BindAsync`; la analítica
+(`SalesAnalytics`) lee **solo del almacén**. La ingesta se dispara al arrancar (seed) y vía
+`POST /api/sales/refresh`. Cambiar la fuente o la tecnología del almacén no toca dominio ni aplicación.
 
 ### Regla sagrada del origen de datos
 `ISalesRepository` es el **único** contrato que conoce el origen de datos. Añadir una fuente nueva (OData,

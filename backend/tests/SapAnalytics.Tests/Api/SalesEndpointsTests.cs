@@ -7,10 +7,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using SapAnalytics.Application.Ports;
 using SapAnalytics.Domain;
+using SapAnalytics.Tests.TestDoubles;
 using Xunit;
 
 namespace SapAnalytics.Tests.Api;
 
+// Analytics endpoints read from the store, so these wire a stub store pre-loaded with sales.
 public class SalesEndpointsTests(SalesEndpointsTests.Factory factory)
     : IClassFixture<SalesEndpointsTests.Factory>
 {
@@ -29,7 +31,7 @@ public class SalesEndpointsTests(SalesEndpointsTests.Factory factory)
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         var sales = await response.Content.ReadFromJsonAsync<List<SaleDto>>(JsonOpts);
-        
+
         Assert.NotNull(sales);
         Assert.Equal(3, sales!.Count);
         Assert.Equal("C001", sales[0].CustomerId);
@@ -43,9 +45,9 @@ public class SalesEndpointsTests(SalesEndpointsTests.Factory factory)
         var response = await _client.GetAsync("/api/sales/by-product");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        
+
         var aggregate = await response.Content.ReadFromJsonAsync<List<ProductTotal>>(JsonOpts);
-        
+
         Assert.NotNull(aggregate);
         Assert.Equal(2, aggregate!.Count);
         Assert.Equal("Café Molido", aggregate[0].Product);
@@ -60,9 +62,9 @@ public class SalesEndpointsTests(SalesEndpointsTests.Factory factory)
         var response = await _client.GetAsync("/api/sales/by-customer");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        
+
         var aggregate = await response.Content.ReadFromJsonAsync<List<CustomerTotal>>(JsonOpts);
-        
+
         Assert.NotNull(aggregate);
         Assert.Equal(2, aggregate!.Count);
         Assert.Equal("C001", aggregate[0].CustomerId);
@@ -82,10 +84,14 @@ public class SalesEndpointsTests(SalesEndpointsTests.Factory factory)
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
+            builder.UseEnvironment("Testing");
             builder.ConfigureServices(services =>
             {
-                services.RemoveAll(typeof(ISalesRepository));
-                services.AddSingleton<ISalesRepository, FakeSalesRepository>();
+                services.RemoveAll(typeof(ISalesStore));
+                services.AddSingleton<ISalesStore>(StubSalesStore.Containing(
+                    new Sale(new DateOnly(2026, 1, 1), "C001", "Café Molido", 10, 100m),
+                    new Sale(new DateOnly(2026, 1, 2), "C002", "Té Verde", 5, 50m),
+                    new Sale(new DateOnly(2026, 1, 3), "C001", "Café Molido", 2, 30m)));
             });
         }
     }
@@ -93,18 +99,4 @@ public class SalesEndpointsTests(SalesEndpointsTests.Factory factory)
     private record SaleDto(DateOnly Date, string CustomerId, string ProductName, int Quantity, decimal Amount);
     private record ProductTotal(string Product, decimal TotalAmount);
     private record CustomerTotal(string CustomerId, decimal TotalAmount);
-
-    private sealed class FakeSalesRepository : ISalesRepository
-    {
-        public Task<Result<IReadOnlyList<Sale>>> SearchAsync(CancellationToken ct = default)
-        {
-            IReadOnlyList<Sale> sales =
-            [
-                new(new DateOnly(2026, 1, 1), "C001", "Café Molido", 10, 100m),
-                new(new DateOnly(2026, 1, 2), "C002", "Té Verde", 5, 50m),
-                new(new DateOnly(2026, 1, 3), "C001", "Café Molido", 2, 30m),
-            ];
-            return Task.FromResult(Result<IReadOnlyList<Sale>>.Success(sales));
-        }
-    }
 }

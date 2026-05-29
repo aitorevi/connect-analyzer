@@ -8,8 +8,18 @@ namespace SapAnalytics.Infrastructure.Inbound.Http;
 // data, Failure -> the error is translated to its HTTP status in one single point.
 [ApiController]
 [Route("api/sales")]
-public sealed class SalesController(SalesAnalytics analytics) : ControllerBase
+public sealed class SalesController(SalesAnalytics analytics, IngestSales ingest) : ControllerBase
 {
+    // Pulls fresh sales from the configured source (mock or real SAP) into the local store.
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh(CancellationToken ct)
+    {
+        var result = await ingest.ExecuteAsync(ct);
+        return result.Match<IActionResult>(
+            ingested => Ok(new { ingested }),
+            ErrorHttpResults.ToActionResult);
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken ct)
     {

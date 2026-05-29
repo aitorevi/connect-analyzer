@@ -2,11 +2,18 @@ using SapAnalytics.Application;
 using SapAnalytics.Application.Ports;
 using SapAnalytics.Infrastructure.Outbound.MockTxt;
 using SapAnalytics.Infrastructure.Outbound.Sap;
+using SapAnalytics.Infrastructure.Outbound.Sqlite;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddScoped<SalesAnalytics>();
+builder.Services.AddScoped<IngestSales>();
+
+// Local store of sales (SQLite file). Ingestion writes here; analytics read from here. Path is
+// configurable (Sqlite:Path) so a deployment can point it at a mounted volume.
+var sqlitePath = builder.Configuration["Sqlite:Path"] ?? "sales.db";
+builder.Services.AddSingleton<ISalesStore>(_ => new SqliteSalesStore($"Data Source={sqlitePath}"));
 
 // Origins allowed to call the API from the browser. Defaults to the local
 // frontend; override via Cors:AllowedOrigins per environment when deploying.
@@ -56,6 +63,16 @@ var app = builder.Build();
 
 app.UseCors("AllowFrontend");
 app.MapControllers();
+
+// Seed the local store from the configured source on startup so the dashboard isn't empty on
+// first load. Skipped under the "Testing" environment (integration tests wire their own store).
+// An expected failure (source unavailable) is ignored on purpose: POST /api/sales/refresh retries.
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    using var scope = app.Services.CreateScope();
+    var ingest = scope.ServiceProvider.GetRequiredService<IngestSales>();
+    await ingest.ExecuteAsync();
+}
 
 app.Run();
 

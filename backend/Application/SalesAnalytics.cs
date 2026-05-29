@@ -3,20 +3,22 @@ using SapAnalytics.Domain;
 
 namespace SapAnalytics.Application;
 
-public sealed class SalesAnalytics(ISalesRepository repository)
+// Reads sales from the local store (not the upstream source): analytics are served from what
+// IngestSales has persisted, decoupling queries from the source's availability.
+public sealed class SalesAnalytics(ISalesStore store)
 {
     public Task<Result<IReadOnlyList<Sale>>> GetAllAsync(CancellationToken ct = default) =>
-        repository.SearchAsync(ct);
+        store.ReadAllAsync(ct);
 
     public async Task<Result<IReadOnlyList<ProductTotal>>> TotalsByProductAsync(CancellationToken ct = default)
     {
-        var sales = await repository.SearchAsync(ct);
+        var sales = await store.ReadAllAsync(ct);
         return sales.Map(AggregateByProduct);
     }
 
     public async Task<Result<IReadOnlyList<CustomerTotal>>> TotalsByCustomerAsync(CancellationToken ct = default)
     {
-        var sales = await repository.SearchAsync(ct);
+        var sales = await store.ReadAllAsync(ct);
         return sales.Map(AggregateByCustomer);
     }
 

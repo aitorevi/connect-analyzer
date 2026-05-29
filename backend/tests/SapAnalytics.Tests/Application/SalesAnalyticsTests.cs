@@ -8,10 +8,10 @@ namespace SapAnalytics.Tests.Application;
 public class SalesAnalyticsTests
 {
     [Fact]
-    public async Task TotalsByProduct_OnRepositoryFailure_PropagatesFailureWithoutAggregating()
+    public async Task TotalsByProduct_OnStoreFailure_PropagatesFailureWithoutAggregating()
     {
-        var error = Error.Unavailable("source down");
-        var service = new SalesAnalytics(StubSalesRepository.Failing(error));
+        var error = Error.Unavailable("store down");
+        var service = new SalesAnalytics(StubSalesStore.FailingRead(error));
 
         var result = await service.TotalsByProductAsync();
 
@@ -20,10 +20,10 @@ public class SalesAnalyticsTests
     }
 
     [Fact]
-    public async Task TotalsByCustomer_OnRepositoryFailure_PropagatesFailureWithoutAggregating()
+    public async Task TotalsByCustomer_OnStoreFailure_PropagatesFailureWithoutAggregating()
     {
-        var error = Error.Unavailable("source down");
-        var service = new SalesAnalytics(StubSalesRepository.Failing(error));
+        var error = Error.Unavailable("store down");
+        var service = new SalesAnalytics(StubSalesStore.FailingRead(error));
 
         var result = await service.TotalsByCustomerAsync();
 
@@ -33,7 +33,7 @@ public class SalesAnalyticsTests
     [Fact]
     public async Task TotalsByProduct_OnSuccess_AggregatesGroupedAndOrderedDescending()
     {
-        var service = new SalesAnalytics(StubSalesRepository.Returning(
+        var service = new SalesAnalytics(StubSalesStore.Containing(
             new Sale(new DateOnly(2026, 1, 1), "C001", "Café", 10, 100m),
             new Sale(new DateOnly(2026, 1, 2), "C002", "Té", 5, 50m),
             new Sale(new DateOnly(2026, 1, 3), "C001", "Café", 2, 30m)));
@@ -50,7 +50,7 @@ public class SalesAnalyticsTests
     [Fact]
     public async Task TotalsByCustomer_OnSuccess_AggregatesGroupedAndOrderedDescending()
     {
-        var service = new SalesAnalytics(StubSalesRepository.Returning(
+        var service = new SalesAnalytics(StubSalesStore.Containing(
             new Sale(new DateOnly(2026, 1, 1), "C001", "Café", 10, 100m),
             new Sale(new DateOnly(2026, 1, 2), "C002", "Té", 5, 50m),
             new Sale(new DateOnly(2026, 1, 3), "C001", "Café", 2, 30m)));

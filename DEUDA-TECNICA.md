@@ -12,10 +12,11 @@ Cada entrada indica **qué**, **por qué se pospone** y **cuándo hay que aborda
 Todos los endpoints de [`SalesController`](backend/Infrastructure/Inbound/Http/SalesController.cs)
 son anónimos, y el mock expone el fichero sin control de acceso.
 
-- **Por qué se pospone:** hoy solo se sirven datos ficticios y el sistema corre en local.
-- **Cuándo abordarla:** **antes** de conectar `SapDataService` a un origen de datos real de
-  SAP o de desplegar fuera de `localhost`. Sin esto, se expondrían datos de negocio reales sin
-  protección. CLAUDE.md ya anticipa el comportamiento 401/403 de la API .NET.
+- **Por qué se pospone:** hoy solo se sirven datos ficticios (mock) o de demo (el sandbox del
+  Business Accelerator Hub, no sensibles) y el sistema corre en local.
+- **Cuándo abordarla:** **antes** de apuntar el adaptador SAP (`SapODataSalesRepository`) a un
+  tenant con **datos reales** de negocio o de desplegar fuera de `localhost`. Sin esto, se
+  expondrían datos reales sin protección. CLAUDE.md ya anticipa el comportamiento 401/403 de la API .NET.
 
 ### 2. Hardening del contenedor de frontend
 
@@ -50,6 +51,9 @@ hace `GetByteArrayAsync` + `GetString` + LINQ: carga el fichero entero en memori
 - **Cuándo abordarla:** cuando el origen pase a "grandes cantidades de datos" reales. Con SAP real
   conviene streaming / paginación / agregación empujada al origen (SQL `GROUP BY`, OData `$apply`),
   que es justo lo previsto para el paso 3 del plan (mover la agregación al puerto).
+- **Nota:** los datos ingeridos ya **se persisten** en SQLite (`ISalesStore` / `SqliteSalesStore`),
+  así que las consultas no recargan la fuente; pero la **ingesta** sí sigue leyendo el payload
+  completo en memoria. Lo pendiente es el streaming en esa fase de ingesta.
 
 ## Robustez
 
