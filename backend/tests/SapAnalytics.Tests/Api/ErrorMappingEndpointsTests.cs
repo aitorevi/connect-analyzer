@@ -10,8 +10,8 @@ using Xunit;
 
 namespace SapAnalytics.Tests.Api;
 
-// End-to-end through the real controller + service: only the data source is faked, so a
-// Failure travels the whole pipeline and we assert the HTTP status it produces.
+// End-to-end through the real controller + service: only the store is faked, so a Failure
+// travels the whole pipeline and we assert the HTTP status it produces.
 public class ErrorMappingEndpointsTests
 {
     [Theory]
@@ -44,9 +44,12 @@ public class ErrorMappingEndpointsTests
 
     private static WebApplicationFactory<Program> FactoryReturning(Result<IReadOnlyList<Sale>> result) =>
         new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+        {
+            builder.UseEnvironment("Testing");
             builder.ConfigureServices(services =>
             {
-                services.RemoveAll(typeof(ISalesRepository));
-                services.AddSingleton<ISalesRepository>(new StubSalesRepository(result));
-            }));
+                services.RemoveAll(typeof(ISalesStore));
+                services.AddSingleton<ISalesStore>(new StubSalesStore(result));
+            });
+        });
 }
