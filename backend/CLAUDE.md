@@ -11,14 +11,20 @@ La dependencia **siempre apunta hacia el dominio**. Capas:
 - **`Application/`** — casos de uso que orquestan el dominio (`SalesAnalytics`).
   - **`Application/Ports/`** — interfaces (contratos) que el exterior debe implementar (`ISalesRepository`).
 - **`Infrastructure/Inbound/Http/`** — adaptador de entrada: controladores que traducen HTTP ↔ aplicación.
-- **`Infrastructure/Outbound/`** — adaptadores de salida hacia fuentes externas (`MockTxt/MockTxtSalesRepository`).
+- **`Infrastructure/Outbound/`** — adaptadores de salida hacia fuentes externas. Dos implementaciones del
+  puerto: `MockTxt/MockTxtSalesRepository` (fichero del mock) y `Sap/SapODataSalesRepository` (SAP S/4HANA
+  real vía OData, sandbox del Business Accelerator Hub).
 - **`Program.cs`** — composición/DI: cablea cada puerto con su adaptador concreto.
 
 ### Regla sagrada del origen de datos
 `ISalesRepository` es el **único** contrato que conoce el origen de datos. Añadir una fuente nueva (OData,
 RFC, ficheros) = escribir un adaptador outbound que lo implemente y cambiar **solo** su registro en
-`Program.cs` (`AddHttpClient<ISalesRepository, MockTxtSalesRepository>(...)`). Nada por encima del adaptador
-conoce la fuente. Regla **inviolable**: si algo parece requerir saltársela, parar y preguntar.
+`Program.cs`. Nada por encima del adaptador conoce la fuente. Regla **inviolable**: si algo parece requerir
+saltársela, parar y preguntar.
+
+**Selección de fuente por config**: `SalesSource` (`Mock` por defecto | `Sap`) elige qué adaptador se
+registra. `Sap` requiere el secreto `Sap:ApiKey` (env `Sap__ApiKey` o `dotnet user-secrets`; nunca en git;
+ver `.env.example`); la cabecera `APIKey` se inyecta en el composition root, así que el adaptador no la conoce.
 
 ## Gestión de errores: `Result<T>` / `Error`
 
