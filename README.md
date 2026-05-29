@@ -1,5 +1,7 @@
 # SAP Analyzer
 
+[![CI](https://github.com/aitorevi/sap-analyzer/actions/workflows/ci.yml/badge.svg)](https://github.com/aitorevi/sap-analyzer/actions/workflows/ci.yml)
+
 Herramienta interna para **analizar grandes cantidades de datos provenientes de SAP** y visualizarlos
 en un frontal con gráficos. Empieza a pequeña escala con datos simulados y se itera poco a poco: el
 objetivo es tener pronto el flujo más fino de punta a punta (**un fichero `.txt` → un endpoint → un
