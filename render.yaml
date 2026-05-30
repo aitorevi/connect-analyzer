@@ -47,10 +47,13 @@ services:
       # Source for ISalesRepository: Mock (default, no secret) or Sap (requires Sap__ApiKey).
       - key: SalesSource
         value: Mock
-      # Ephemeral SQLite inside the container — Free Web Services have no persistent disk.
-      # The seed-on-startup repopulates it on each cold start, which is fine for the demo.
+      # SQLite file path. We write to /tmp because the container's WORKDIR (/app) belongs
+      # to root in the base image and the app runs as non-root ($APP_UID), so /app is not
+      # writable. /tmp is world-writable and always works. It is ephemeral — Free Web
+      # Services have no persistent disk anyway, and the seed-on-startup repopulates it on
+      # each cold start, which is fine for the demo.
       - key: Sqlite__Path
-        value: sales.db
+        value: /tmp/sales.db
       # API key for the real SAP sandbox. Only needed if SalesSource=Sap.
       # `sync: false` keeps it out of the Blueprint; set it manually in the Render dashboard.
       - key: Sap__ApiKey
