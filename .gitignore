@@ -3,6 +3,9 @@
 .env.*
 !.env.example
 
+# Prompts internos de iteración (planes de trabajo puntuales, no parte del repo)
+prompt-*.md
+
 # Datos del mock de SAP
 # Los .txt INVENTADOS de sap-mock/data/ son fixtures y SÍ se commitean.
 # Cualquier dato real (export de SAP) va en sap-mock/data-real/ o sap-mock/private/, NUNCA en git.

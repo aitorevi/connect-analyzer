@@ -2,6 +2,7 @@ using SapAnalytics.Application;
 using SapAnalytics.Application.Ports;
 using SapAnalytics.Infrastructure.Outbound.MockTxt;
 using SapAnalytics.Infrastructure.Outbound.Sap;
+using SapAnalytics.Infrastructure.Outbound.Shopify;
 using SapAnalytics.Infrastructure.Outbound.Sqlite;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -55,6 +56,44 @@ if (string.Equals(salesSource, "Sap", StringComparison.OrdinalIgnoreCase))
         // the JSON parser blows up with "0x1F is an invalid start of a value".
         AutomaticDecompression = System.Net.DecompressionMethods.All,
     });
+}
+else if (string.Equals(salesSource, "Shopify", StringComparison.OrdinalIgnoreCase))
+{
+    // Real Shopify store via Admin REST API. The Dev Dashboard no longer exposes a static
+    // shpat_ token: ShopifyTokenProvider exchanges client_id + client_secret for the access
+    // token at runtime via Client Credentials Grant. Both secrets stay in configuration
+    // (env Shopify__ClientId / Shopify__ClientSecret); they enter the adapter through the
+    // composition root, never via the domain.
+    var shopifyStoreUrl = builder.Configuration["Shopify:StoreUrl"]
+        ?? throw new InvalidOperationException(
+            "SalesSource=Shopify requires Shopify:StoreUrl (set it via env Shopify__StoreUrl).");
+    var shopifyClientId = builder.Configuration["Shopify:ClientId"]
+        ?? throw new InvalidOperationException(
+            "SalesSource=Shopify requires Shopify:ClientId (set it via env Shopify__ClientId or user-secrets).");
+    var shopifyClientSecret = builder.Configuration["Shopify:ClientSecret"]
+        ?? throw new InvalidOperationException(
+            "SalesSource=Shopify requires Shopify:ClientSecret (set it via env Shopify__ClientSecret or user-secrets).");
+    var shopifyApiVersion = builder.Configuration["Shopify:ApiVersion"] ?? "2025-01";
+
+    // Single named HttpClient shared by token provider and orders repository: both speak to
+    // the same store, the only difference is the path and headers per request.
+    builder.Services.AddHttpClient("shopify", client =>
+    {
+        client.BaseAddress = new Uri(shopifyStoreUrl);
+    });
+
+    // Singleton so the in-memory access-token cache survives across requests.
+    builder.Services.AddSingleton(sp =>
+        new ShopifyTokenProvider(
+            sp.GetRequiredService<IHttpClientFactory>().CreateClient("shopify"),
+            shopifyClientId,
+            shopifyClientSecret));
+
+    builder.Services.AddScoped<ISalesRepository>(sp =>
+        new ShopifyOrdersRepository(
+            sp.GetRequiredService<IHttpClientFactory>().CreateClient("shopify"),
+            sp.GetRequiredService<ShopifyTokenProvider>(),
+            shopifyApiVersion));
 }
 else
 {

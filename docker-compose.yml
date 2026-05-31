@@ -10,8 +10,19 @@ services:
     container_name: sap-backend
     ports:
       - "5080:8080"
+    # Pull SalesSource, Sap__* and Shopify__* from the root .env (gitignored). Optional so a
+    # mock-only run still works if .env is absent; see .env.example for the full list.
+    env_file:
+      - path: .env
+        required: false
     environment:
+      # Override anything .env might set for non-docker runs: inside the compose network the
+      # mock service is reachable as sap-mock:8080, never localhost.
       - SapMock__BaseUrl=http://sap-mock:8080
+      # The image runs as the non-root $APP_UID user (see backend/Dockerfile); /app belongs to
+      # root so the SQLite file cannot live there. /tmp is world-writable on the dotnet/aspnet
+      # image. Matches render.yaml's production path.
+      - Sqlite__Path=/tmp/sales.db
     depends_on:
       - sap-mock
 
