@@ -10,8 +10,6 @@ using Xunit;
 
 namespace ConnectAnalytics.Tests.Api;
 
-// End-to-end through the real controller + service: only the store is faked, so a Failure
-// travels the whole pipeline and we assert the HTTP status it produces.
 public class ErrorMappingEndpointsTests
 {
     [Theory]

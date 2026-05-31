@@ -8,13 +8,10 @@ namespace ConnectAnalytics.Tests.Infrastructure.Outbound;
 
 public class ShopifyOrdersRepositoryTests
 {
-    // OAuth response from POST /admin/oauth/access_token. Apps from the Dev Dashboard return a
-    // "shpat_" token (offline, no expires_in) that goes in the X-Shopify-Access-Token header.
     private const string TokenJson = """
     { "access_token": "shpat_test_token", "scope": "read_orders,read_products,read_customers" }
     """;
 
-    // Two orders × two line items each → adapter must flatten into 4 Sales, one per line.
     private const string TwoOrdersTwoLines = """
     {
       "orders": [
@@ -84,7 +81,6 @@ public class ShopifyOrdersRepositoryTests
     [Fact]
     public async Task ParsesLineItemPriceWithInvariantCulture()
     {
-        // "19.99" must parse as 19.99m on any host culture (es-ES would otherwise read it as 1999).
         const string json = """
         {
           "orders": [
@@ -107,9 +103,6 @@ public class ShopifyOrdersRepositoryTests
     [Fact]
     public async Task SubtractsLineItemDiscountFromAmount()
     {
-        // Shopify's `line_item.price` is the pre-discount unit price; `total_discount` accumulates
-        // line-level discounts plus the line's share of order-level promos. Sale.Amount must stay
-        // net (matches NetAmount in the SAP adapter and what the merchant sees in the admin).
         const string json = """
         {
           "orders": [
@@ -134,7 +127,6 @@ public class ShopifyOrdersRepositoryTests
     [Fact]
     public async Task TreatsMissingDiscountAsZero()
     {
-        // Backwards-compatible: orders without `total_discount` still map cleanly.
         const string json = """
         {
           "orders": [
@@ -157,9 +149,6 @@ public class ShopifyOrdersRepositoryTests
     [Fact]
     public async Task UsesStoreLocalDateWhenCreatedAtHasOffset()
     {
-        // Shopify emits `created_at` with the store's offset; the admin aggregates by store-local
-        // date. A PST order at 22:00 on Jan 15 is "Jan 15 revenue" to the merchant, even though
-        // its UTC instant falls on Jan 16. The adapter must preserve the store-local date.
         const string json = """
         {
           "orders": [
@@ -303,8 +292,6 @@ public class ShopifyOrdersRepositoryTests
     [Fact]
     public async Task FiltersToPaidOrdersOnly()
     {
-        // The orders query must pin financial_status=paid so cancelled, pending, refunded and
-        // voided orders don't get ingested and inflate revenue aggregates.
         var handler = new RoutingHandler(TokenJson, HttpStatusCode.OK, """{ "orders": [] }""", HttpStatusCode.OK);
         var sut = CreateSutCustom(handler);
 
@@ -318,8 +305,6 @@ public class ShopifyOrdersRepositoryTests
     [Fact]
     public async Task ReusesCachedTokenAcrossSearches()
     {
-        // The token endpoint is hit at most once per process lifetime: subsequent SearchAsync
-        // calls reuse the cached access token. Guards against accidental token-storms.
         var handler = new RoutingHandler(TokenJson, HttpStatusCode.OK, """{ "orders": [] }""", HttpStatusCode.OK);
         var sut = CreateSutCustom(handler);
 
@@ -371,10 +356,7 @@ public class ShopifyOrdersRepositoryTests
         var tokens = new ShopifyTokenProvider(http, "client-id", "client-secret");
         return new ShopifyOrdersRepository(http, tokens, "2025-01");
     }
-
-    // Routes the two endpoints the adapter hits: the OAuth token exchange (POST .../oauth/access_token)
-    // and the orders fetch (GET .../orders.json). Each response is independently configurable so
-    // tests can simulate success on one and failure on the other.
+    
     private sealed class RoutingHandler(
         string tokenJson,
         HttpStatusCode tokenStatus,
@@ -416,9 +398,7 @@ public class ShopifyOrdersRepositoryTests
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request, CancellationToken ct) => throw toThrow;
     }
-
-    // Succeeds on the token endpoint, throws on the orders endpoint: lets a test simulate the
-    // HttpClient timeout (or any other exception) hitting only the second hop.
+    
     private sealed class TimingOutOrdersHandler(string tokenJson, Exception ordersException)
         : HttpMessageHandler
     {

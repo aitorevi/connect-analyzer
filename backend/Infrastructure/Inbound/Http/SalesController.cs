@@ -3,14 +3,10 @@ using ConnectAnalytics.Application;
 
 namespace ConnectAnalytics.Infrastructure.Inbound.Http;
 
-// Inbound adapter: translates HTTP requests into calls against the application service.
-// This is the only place where a Result is "opened" (via Match): Success -> 200 with the
-// data, Failure -> the error is translated to its HTTP status in one single point.
 [ApiController]
 [Route("api/sales")]
 public sealed class SalesController(SalesAnalytics analytics, IngestSales ingest) : ControllerBase
 {
-    // Pulls fresh sales from the configured source (mock or real SAP) into the local store.
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh(CancellationToken ct)
     {

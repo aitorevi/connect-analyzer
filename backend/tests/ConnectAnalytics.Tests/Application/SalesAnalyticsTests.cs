@@ -15,7 +15,6 @@ public class SalesAnalyticsTests
 
         var result = await service.TotalsByProductAsync();
 
-        // The Map never runs the aggregation on a Failure: the very same error comes back.
         Assert.Same(error, FailureError(result));
     }
 

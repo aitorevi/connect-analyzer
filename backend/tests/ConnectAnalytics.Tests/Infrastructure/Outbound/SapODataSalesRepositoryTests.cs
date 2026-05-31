@@ -8,9 +8,6 @@ namespace ConnectAnalytics.Tests.Infrastructure.Outbound;
 
 public class SapODataSalesRepositoryTests
 {
-    // OData v2 envelope: { "d": { "results": [ items with an expanded to_SalesOrder ] } }.
-    // CreationDate is the v2 "/Date(epoch-ms)/" form; decimals come as strings.
-    // 1465776000000 ms = 2016-06-13, 1465862400000 ms = 2016-06-14 (UTC).
     private const string TwoItems = """
     {
       "d": {

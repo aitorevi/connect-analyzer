@@ -6,17 +6,7 @@ using ConnectAnalytics.Domain;
 
 namespace ConnectAnalytics.Infrastructure.Outbound.Shopify;
 
-// Obtains and caches the Admin API access token from Shopify's Client Credentials Grant
-// (POST /admin/oauth/access_token). Apps created in the Dev Dashboard don't expose a static
-// shpat_ token in the UI anymore: the token is fetched programmatically from client_id +
-// client_secret. The response token is "offline" (no expires_in), so we keep it in memory
-// for the process lifetime and lazy-fetch on first use.
-//
-// Concurrency: the first caller wins the SemaphoreSlim and performs the HTTP call; everyone
-// else awaits and reads the cached value, so we never hit the OAuth endpoint twice in parallel.
-//
 // TODO: react to a future 401 from the data endpoint by invalidating the cached token and
-// retrying once (Shopify rotates/revokes tokens out-of-band).
 public sealed class ShopifyTokenProvider(HttpClient http, string clientId, string clientSecret)
 {
     private readonly SemaphoreSlim _gate = new(1, 1);
@@ -62,16 +52,11 @@ public sealed class ShopifyTokenProvider(HttpClient http, string clientId, strin
             }
             catch (JsonException ex)
             {
-                // A 2xx response with a body that is not the JSON shape we expect is unexpected,
-                // not Validation: the caller's request was perfectly well-formed.
                 return Result<string>.Failure(Error.Unexpected(
                     $"Malformed payload from Shopify's OAuth endpoint: {ex.Message}"));
             }
             catch (OperationCanceledException) when (!ct.IsCancellationRequested)
             {
-                // HttpClient throws TaskCanceledException (an OCE) on its internal Timeout even
-                // when the caller's token hasn't been cancelled. Treat as the source being
-                // unavailable, not as a business cancellation.
                 return Result<string>.Failure(Error.Unavailable(
                     "Shopify OAuth request timed out."));
             }
@@ -80,7 +65,6 @@ public sealed class ShopifyTokenProvider(HttpClient http, string clientId, strin
         {
             _gate.Release();
         }
-        // OperationCanceledException intentionally propagates when the caller cancelled.
     }
 
     private sealed record TokenRequest(

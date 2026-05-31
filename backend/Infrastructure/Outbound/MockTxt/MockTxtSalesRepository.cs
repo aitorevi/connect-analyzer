@@ -5,11 +5,6 @@ using ConnectAnalytics.Domain;
 
 namespace ConnectAnalytics.Infrastructure.Outbound.MockTxt;
 
-// Outbound adapter that reads sales from a pipe-delimited Latin-1 .txt served over HTTP,
-// imitating a typical SAP export. This is the only class that knows the file lives at
-// /sales.txt, that it is ISO-8859-1 encoded, and that the columns are
-// DATE|CUSTOMER_ID|PRODUCT_NAME|QUANTITY|AMOUNT. The mapping from these wire
-// column names to the domain fields of Sale is exactly what an adapter is for.
 public sealed class MockTxtSalesRepository(HttpClient http) : ISalesRepository
 {
     private const string SalesResourcePath = "/sales.txt";

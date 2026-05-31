@@ -4,7 +4,6 @@ using Xunit;
 
 namespace ConnectAnalytics.Tests.Infrastructure.Outbound;
 
-// Exercises the real SQLite adapter against a throwaway database file per test instance.
 public sealed class SqliteSalesStoreTests : IDisposable
 {
     private readonly string _dbPath = Path.Combine(Path.GetTempPath(), $"sapanalytics-{Guid.NewGuid():N}.db");

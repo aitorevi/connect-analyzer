@@ -5,13 +5,6 @@ using ConnectAnalytics.Domain;
 
 namespace ConnectAnalytics.Infrastructure.Outbound.Sqlite;
 
-// Outbound adapter that persists sales in a SQLite database via hand-written SQL (no ORM).
-// This is the only class that knows the storage is SQLite, the table shape, and that decimals
-// are stored as invariant text (SQLite has no decimal type; text avoids floating-point drift)
-// and dates as ISO `yyyy-MM-dd`.
-//
-// Translates SqliteException at its edge into Error.Unavailable, so nothing above the adapter
-// sees a storage exception. OperationCanceledException propagates (cancellation is not a failure).
 public sealed class SqliteSalesStore(string connectionString) : ISalesStore
 {
     private const string DateFormat = "yyyy-MM-dd";

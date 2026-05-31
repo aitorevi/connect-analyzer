@@ -11,8 +11,6 @@ using ConnectAnalytics.Tests.TestDoubles;
 using Xunit;
 
 namespace ConnectAnalytics.Tests.Api;
-
-// Analytics endpoints read from the store, so these wire a stub store pre-loaded with sales.
 public class SalesEndpointsTests(SalesEndpointsTests.Factory factory)
     : IClassFixture<SalesEndpointsTests.Factory>
 {

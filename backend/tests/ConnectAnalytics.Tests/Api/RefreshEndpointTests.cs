@@ -12,8 +12,6 @@ using Xunit;
 
 namespace ConnectAnalytics.Tests.Api;
 
-// End-to-end through the real controller + IngestSales: POST /refresh pulls from the (faked)
-// source and writes to the store.
 public class RefreshEndpointTests
 {
     private static readonly JsonSerializerOptions JsonOpts = new()

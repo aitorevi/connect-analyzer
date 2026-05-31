@@ -8,16 +8,7 @@ using ConnectAnalytics.Domain;
 
 namespace ConnectAnalytics.Infrastructure.Outbound.Shopify;
 
-// Outbound adapter that reads sales from a real Shopify store via the Admin REST API.
-// One Shopify "order" carries N "line_items"; each line_item becomes one domain Sale.
-//
-// Authentication is the Client Credentials Grant flow: ShopifyTokenProvider exchanges
-// client_id + client_secret for the X-Shopify-Access-Token used here. The adapter is the
-// only class that knows the source speaks Shopify, that orders have line_items, and how the
-// JSON fields map to the domain.
-//
 // TODO: paginate via the Link header's `rel="next"` cursor. The MVP fetches a single page of
-// up to 250 orders, which is enough for the test dataset. See DEUDA-TECNICA.md.
 public sealed class ShopifyOrdersRepository(
     HttpClient http,
     ShopifyTokenProvider tokens,
