@@ -1,4 +1,4 @@
-# Render Blueprint for the SAP Analyzer live demo (mock + backend).
+# Render Blueprint for the Connect Analyzer live demo (mock + backend).
 #
 # Deploy: at https://dashboard.render.com -> New + -> Blueprint -> connect this repo.
 # Render reads this file, creates both services on the Free plan and assigns *.onrender.com URLs.

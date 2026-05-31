@@ -21,7 +21,7 @@ export default async function Page() {
 
   return (
     <main>
-      <h1>SAP Analyzer</h1>
+      <h1>Connect Analyzer</h1>
       <p className="subtitle">Prototype with simulated sales data.</p>
 
       <h2>Total amount by product</h2>

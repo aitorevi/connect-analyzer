@@ -5,7 +5,7 @@ su propio `CLAUDE.md`** (`backend/`, `frontend/`, `sap-mock/`) y se cargan al tr
 
 ## Proyecto
 
-**SAP Analyzer** — herramienta interna para analizar grandes cantidades de datos provenientes de SAP
+**Connect Analyzer** — herramienta interna para analizar grandes cantidades de datos provenientes de SAP
 y visualizarlos en un frontal con gráficos. Se empieza a pequeña escala, con datos simulados, y se itera
 poco a poco. No optimizar de más: nada de Kubernetes, colas ni microservicios.
 
