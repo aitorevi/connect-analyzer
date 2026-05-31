@@ -6,7 +6,7 @@ namespace ConnectAnalytics.Tests.Infrastructure.Outbound;
 
 public sealed class SqliteSalesStoreTests : IDisposable
 {
-    private readonly string _dbPath = Path.Combine(Path.GetTempPath(), $"sapanalytics-{Guid.NewGuid():N}.db");
+    private readonly string _dbPath = Path.Combine(Path.GetTempPath(), $"connectanalytics-{Guid.NewGuid():N}.db");
 
     private SqliteSalesStore CreateSut() => new($"Data Source={_dbPath}");
 
