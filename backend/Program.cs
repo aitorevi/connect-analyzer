@@ -47,6 +47,13 @@ if (string.Equals(salesSource, "Sap", StringComparison.OrdinalIgnoreCase))
     {
         client.BaseAddress = new Uri(sapBaseUrl);
         client.DefaultRequestHeaders.Add("APIKey", sapApiKey);
+    })
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+    {
+        // The SAP sandbox gzips OData responses unconditionally; without this,
+        // GetStringAsync hands the adapter the raw gzip bytes (0x1F 0x8B...) and
+        // the JSON parser blows up with "0x1F is an invalid start of a value".
+        AutomaticDecompression = System.Net.DecompressionMethods.All,
     });
 }
 else
