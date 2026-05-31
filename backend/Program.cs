@@ -65,13 +65,53 @@ app.UseCors("AllowFrontend");
 app.MapControllers();
 
 // Seed the local store from the configured source on startup so the dashboard isn't empty on
-// first load. Skipped under the "Testing" environment (integration tests wire their own store).
-// An expected failure (source unavailable) is ignored on purpose: POST /api/sales/refresh retries.
+// first load. Runs in the background with retries: on free-tier hosting the upstream source can
+// take 30-60 s to wake up from a cold start, longer than the HttpClient default, so the first
+// attempt frequently lands while the source is still returning 502/timeouts. Retries with backoff
+// let the store self-heal without blocking app.Run(). Skipped under "Testing" (integration tests
+// wire their own store). POST /api/sales/refresh remains available as a manual retry.
 if (!app.Environment.IsEnvironment("Testing"))
 {
-    using var scope = app.Services.CreateScope();
-    var ingest = scope.ServiceProvider.GetRequiredService<IngestSales>();
-    await ingest.ExecuteAsync();
+    _ = Task.Run(async () =>
+    {
+        TimeSpan[] backoffs =
+        [
+            TimeSpan.Zero,
+            TimeSpan.FromSeconds(5),
+            TimeSpan.FromSeconds(15),
+            TimeSpan.FromSeconds(30),
+            TimeSpan.FromSeconds(60),
+        ];
+
+        var logger = app.Services.GetRequiredService<ILogger<Program>>();
+
+        for (var attempt = 0; attempt < backoffs.Length; attempt++)
+        {
+            if (backoffs[attempt] > TimeSpan.Zero)
+                await Task.Delay(backoffs[attempt]);
+
+            using var scope = app.Services.CreateScope();
+            var ingest = scope.ServiceProvider.GetRequiredService<IngestSales>();
+            var result = await ingest.ExecuteAsync();
+
+            var succeeded = result.Match(
+                count =>
+                {
+                    logger.LogInformation("Startup seed ingested {Count} sales on attempt {Attempt}", count, attempt + 1);
+                    return true;
+                },
+                error =>
+                {
+                    logger.LogWarning("Startup seed attempt {Attempt} failed: {Type} {Message}", attempt + 1, error.Type, error.Message);
+                    return false;
+                });
+
+            if (succeeded)
+                return;
+        }
+
+        logger.LogError("Startup seed gave up after {Attempts} attempts; use POST /api/sales/refresh to retry", backoffs.Length);
+    });
 }
 
 app.Run();
