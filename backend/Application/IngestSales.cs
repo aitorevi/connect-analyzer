@@ -1,7 +1,7 @@
-using SapAnalytics.Application.Ports;
-using SapAnalytics.Domain;
+using ConnectAnalytics.Application.Ports;
+using ConnectAnalytics.Domain;
 
-namespace SapAnalytics.Application;
+namespace ConnectAnalytics.Application;
 
 // ETL use case: pulls the current sales from the configured source (mock or real SAP) and
 // persists them in the local store, replacing what was there. Returns the number of rows ingested.

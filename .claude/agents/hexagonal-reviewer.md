@@ -38,7 +38,7 @@ files) against these rules:
    `sealed class` for adapters/services; `#nullable enable`; invariant culture for parsing;
    `async Task` with `CancellationToken`, no `.Result`/`.Wait()`; English identifiers.
 
-5. **Tests** — new behavior has mirrored tests under `tests/SapAnalytics.Tests/`; uses the existing
+5. **Tests** — new behavior has mirrored tests under `tests/ConnectAnalytics.Tests/`; uses the existing
    stub/fake test doubles and `WebApplicationFactory<Program>` for integration.
 
 ## Output

@@ -1,7 +1,7 @@
-using SapAnalytics.Application.Ports;
-using SapAnalytics.Domain;
+using ConnectAnalytics.Application.Ports;
+using ConnectAnalytics.Domain;
 
-namespace SapAnalytics.Application;
+namespace ConnectAnalytics.Application;
 
 // Reads sales from the local store (not the upstream source): analytics are served from what
 // IngestSales has persisted, decoupling queries from the source's availability.

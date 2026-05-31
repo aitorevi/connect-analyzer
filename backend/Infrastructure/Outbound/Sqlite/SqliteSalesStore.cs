@@ -1,9 +1,9 @@
 using System.Globalization;
 using Microsoft.Data.Sqlite;
-using SapAnalytics.Application.Ports;
-using SapAnalytics.Domain;
+using ConnectAnalytics.Application.Ports;
+using ConnectAnalytics.Domain;
 
-namespace SapAnalytics.Infrastructure.Outbound.Sqlite;
+namespace ConnectAnalytics.Infrastructure.Outbound.Sqlite;
 
 // Outbound adapter that persists sales in a SQLite database via hand-written SQL (no ORM).
 // This is the only class that knows the storage is SQLite, the table shape, and that decimals

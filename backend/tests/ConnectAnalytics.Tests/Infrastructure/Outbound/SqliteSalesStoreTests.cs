@@ -1,8 +1,8 @@
-using SapAnalytics.Domain;
-using SapAnalytics.Infrastructure.Outbound.Sqlite;
+using ConnectAnalytics.Domain;
+using ConnectAnalytics.Infrastructure.Outbound.Sqlite;
 using Xunit;
 
-namespace SapAnalytics.Tests.Infrastructure.Outbound;
+namespace ConnectAnalytics.Tests.Infrastructure.Outbound;
 
 // Exercises the real SQLite adapter against a throwaway database file per test instance.
 public sealed class SqliteSalesStoreTests : IDisposable

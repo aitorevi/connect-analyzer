@@ -6,8 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <RootNamespace>SapAnalytics.Tests</RootNamespace>
-    <AssemblyName>SapAnalytics.Tests</AssemblyName>
+    <RootNamespace>ConnectAnalytics.Tests</RootNamespace>
+    <AssemblyName>ConnectAnalytics.Tests</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\SapAnalytics.csproj" />
+    <ProjectReference Include="..\..\ConnectAnalytics.csproj" />
   </ItemGroup>
 
 </Project>

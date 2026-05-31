@@ -5,12 +5,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using SapAnalytics.Application.Ports;
-using SapAnalytics.Domain;
-using SapAnalytics.Tests.TestDoubles;
+using ConnectAnalytics.Application.Ports;
+using ConnectAnalytics.Domain;
+using ConnectAnalytics.Tests.TestDoubles;
 using Xunit;
 
-namespace SapAnalytics.Tests.Api;
+namespace ConnectAnalytics.Tests.Api;
 
 // End-to-end through the real controller + IngestSales: POST /refresh pulls from the (faked)
 // source and writes to the store.

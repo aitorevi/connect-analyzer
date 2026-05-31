@@ -1,7 +1,7 @@
-using SapAnalytics.Application.Ports;
-using SapAnalytics.Domain;
+using ConnectAnalytics.Application.Ports;
+using ConnectAnalytics.Domain;
 
-namespace SapAnalytics.Tests.TestDoubles;
+namespace ConnectAnalytics.Tests.TestDoubles;
 
 // Configurable test double: returns whatever Result it is given, touching no network or
 // files. Because the service and controller depend on ISalesRepository (the interface),

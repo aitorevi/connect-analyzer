@@ -1,4 +1,4 @@
-namespace SapAnalytics.Domain;
+namespace ConnectAnalytics.Domain;
 
 public record Sale(
     DateOnly Date,

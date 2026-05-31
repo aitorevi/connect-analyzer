@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using SapAnalytics.Domain;
+using ConnectAnalytics.Domain;
 
-namespace SapAnalytics.Infrastructure.Inbound.Http;
+namespace ConnectAnalytics.Infrastructure.Inbound.Http;
 
 // The single point that translates a domain Error into an HTTP response. Keeping HTTP
 // knowledge here (the inbound adapter), not in the domain, is what lets Error stay a pure

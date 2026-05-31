@@ -1,9 +1,9 @@
 using System.Globalization;
 using System.Text;
-using SapAnalytics.Application.Ports;
-using SapAnalytics.Domain;
+using ConnectAnalytics.Application.Ports;
+using ConnectAnalytics.Domain;
 
-namespace SapAnalytics.Infrastructure.Outbound.MockTxt;
+namespace ConnectAnalytics.Infrastructure.Outbound.MockTxt;
 
 // Outbound adapter that reads sales from a pipe-delimited Latin-1 .txt served over HTTP,
 // imitating a typical SAP export. This is the only class that knows the file lives at

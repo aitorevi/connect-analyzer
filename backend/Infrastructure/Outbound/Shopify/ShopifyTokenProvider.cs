@@ -2,9 +2,9 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using SapAnalytics.Domain;
+using ConnectAnalytics.Domain;
 
-namespace SapAnalytics.Infrastructure.Outbound.Shopify;
+namespace ConnectAnalytics.Infrastructure.Outbound.Shopify;
 
 // Obtains and caches the Admin API access token from Shopify's Client Credentials Grant
 // (POST /admin/oauth/access_token). Apps created in the Dev Dashboard don't expose a static

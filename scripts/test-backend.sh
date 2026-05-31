@@ -11,4 +11,4 @@ docker run --rm \
   -v "$(pwd)/backend:/src" \
   -w /src \
   mcr.microsoft.com/dotnet/sdk:10.0 \
-  dotnet test tests/SapAnalytics.Tests/SapAnalytics.Tests.csproj "$@"
+  dotnet test tests/ConnectAnalytics.Tests/ConnectAnalytics.Tests.csproj "$@"

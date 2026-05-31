@@ -1,4 +1,4 @@
-namespace SapAnalytics.Domain;
+namespace ConnectAnalytics.Domain;
 
 // Read model: total amount aggregated per product.
 public record ProductTotal(string Product, decimal TotalAmount);
