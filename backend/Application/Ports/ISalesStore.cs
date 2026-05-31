@@ -1,6 +1,6 @@
-using ConnectAnalytics.Domain;
+using ConnectAnalyzer.Domain;
 
-namespace ConnectAnalytics.Application.Ports;
+namespace ConnectAnalyzer.Application.Ports;
 
 public interface ISalesStore
 { 

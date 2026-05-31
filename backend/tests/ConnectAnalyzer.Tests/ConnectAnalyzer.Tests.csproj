@@ -6,8 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <RootNamespace>ConnectAnalytics.Tests</RootNamespace>
-    <AssemblyName>ConnectAnalytics.Tests</AssemblyName>
+    <RootNamespace>ConnectAnalyzer.Tests</RootNamespace>
+    <AssemblyName>ConnectAnalyzer.Tests</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ConnectAnalytics.csproj" />
+    <ProjectReference Include="..\..\ConnectAnalyzer.csproj" />
   </ItemGroup>
 
 </Project>

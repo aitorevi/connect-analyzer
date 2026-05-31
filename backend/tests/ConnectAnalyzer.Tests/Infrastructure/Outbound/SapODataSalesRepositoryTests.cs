@@ -1,10 +1,10 @@
 using System.Net;
 using System.Text;
-using ConnectAnalytics.Domain;
-using ConnectAnalytics.Infrastructure.Outbound.Sap;
+using ConnectAnalyzer.Domain;
+using ConnectAnalyzer.Infrastructure.Outbound.Sap;
 using Xunit;
 
-namespace ConnectAnalytics.Tests.Infrastructure.Outbound;
+namespace ConnectAnalyzer.Tests.Infrastructure.Outbound;
 
 public class SapODataSalesRepositoryTests
 {

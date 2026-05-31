@@ -40,7 +40,7 @@ proyecto-sap/
 │   └── (servicio que sirve esos datos)
 ├── backend/
 │   ├── Dockerfile
-│   ├── ConnectAnalytics.csproj
+│   ├── ConnectAnalyzer.csproj
 │   ├── Program.cs
 │   ├── Models/
 │   │   └── Venta.cs
@@ -81,7 +81,7 @@ La clave del diseño: **`SapDataService` es la única pieza que sabe de dónde v
    - **Más realista:** un pequeño servicio que exponga un endpoint OData-like (`/odata/Ventas`) devolviendo JSON, para ensayar el caso S/4HANA. Para empezar vale la opción simple.
 
 ### Fase 2 — Backend en C# (.NET 10 Web API)
-1. Crear el proyecto Web API: `dotnet new webapi -n ConnectAnalytics` (generará el proyecto apuntando a `net10.0` en el `.csproj`).
+1. Crear el proyecto Web API: `dotnet new webapi -n ConnectAnalyzer` (generará el proyecto apuntando a `net10.0` en el `.csproj`).
 2. **Modelo** `Venta.cs`: clase con Fecha, Cliente, Producto, Cantidad, Importe.
 3. **`SapDataService`**: clase responsable de leer del mock. Primera versión: descarga el `.txt` del `sap-mock`, lo parsea (split por `|`, saltando la cabecera, parseando tipos y respetando la codificación Latin-1) y devuelve `List<Venta>`. Aislar aquí la lógica de origen es lo más importante del proyecto.
 4. **`VentasController`**: expone endpoints REST limpios para el front, por ejemplo:

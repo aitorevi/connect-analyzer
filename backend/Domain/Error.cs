@@ -1,4 +1,4 @@
-namespace ConnectAnalytics.Domain;
+namespace ConnectAnalyzer.Domain;
 
 public enum ErrorType
 {

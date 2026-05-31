@@ -5,12 +5,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using ConnectAnalytics.Application.Ports;
-using ConnectAnalytics.Domain;
-using ConnectAnalytics.Tests.TestDoubles;
+using ConnectAnalyzer.Application.Ports;
+using ConnectAnalyzer.Domain;
+using ConnectAnalyzer.Tests.TestDoubles;
 using Xunit;
 
-namespace ConnectAnalytics.Tests.Api;
+namespace ConnectAnalyzer.Tests.Api;
 
 public class RefreshEndpointTests
 {

@@ -1,9 +1,9 @@
-using ConnectAnalytics.Application;
-using ConnectAnalytics.Application.Ports;
-using ConnectAnalytics.Infrastructure.Outbound.MockTxt;
-using ConnectAnalytics.Infrastructure.Outbound.Sap;
-using ConnectAnalytics.Infrastructure.Outbound.Shopify;
-using ConnectAnalytics.Infrastructure.Outbound.Sqlite;
+using ConnectAnalyzer.Application;
+using ConnectAnalyzer.Application.Ports;
+using ConnectAnalyzer.Infrastructure.Outbound.MockTxt;
+using ConnectAnalyzer.Infrastructure.Outbound.Sap;
+using ConnectAnalyzer.Infrastructure.Outbound.Shopify;
+using ConnectAnalyzer.Infrastructure.Outbound.Sqlite;
 
 var builder = WebApplication.CreateBuilder(args);
 

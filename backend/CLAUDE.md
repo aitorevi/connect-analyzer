@@ -66,7 +66,7 @@ verdaderamente excepcional.
 
 ## Estilo C#
 
-- **File-scoped namespaces** (`namespace ConnectAnalytics.Domain;`), sin llaves.
+- **File-scoped namespaces** (`namespace ConnectAnalyzer.Domain;`), sin llaves.
 - **Primary constructors siempre** para clases con dependencias: `public class SalesController(ISalesRepository sales)`.
   Referenciar el parámetro por su nombre (sin `_`, sin campo declarado). No usar la forma verbosa
   constructor + campo privado.
@@ -83,7 +83,7 @@ verdaderamente excepcional.
 
 Ejecutar: **`./scripts/test-backend.sh`** (desde la raíz; `dotnet test` dockerizado, reenvía args como `--filter`).
 
-- Estructura espejo de `src` bajo `tests/ConnectAnalytics.Tests/`: `Domain/`, `Application/`, `Api/`,
+- Estructura espejo de `src` bajo `tests/ConnectAnalyzer.Tests/`: `Domain/`, `Application/`, `Api/`,
   `Infrastructure/{Inbound,Outbound}/`, `TestDoubles/`.
 - `[Fact]` para casos concretos; `[Theory]` + `[InlineData]` para parametrizar (p.ej. `ErrorType` → status).
 - **Naming**: `Method_Condition_Expected` (`Map_OnFailure_DoesNotRunTransformAndPropagatesErrorUnchanged`).

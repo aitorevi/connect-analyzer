@@ -1,9 +1,9 @@
 using System.Globalization;
 using System.Text;
-using ConnectAnalytics.Application.Ports;
-using ConnectAnalytics.Domain;
+using ConnectAnalyzer.Application.Ports;
+using ConnectAnalyzer.Domain;
 
-namespace ConnectAnalytics.Infrastructure.Outbound.MockTxt;
+namespace ConnectAnalyzer.Infrastructure.Outbound.MockTxt;
 
 public sealed class MockTxtSalesRepository(HttpClient http) : ISalesRepository
 {

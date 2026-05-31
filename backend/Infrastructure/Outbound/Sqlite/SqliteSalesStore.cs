@@ -1,9 +1,9 @@
 using System.Globalization;
 using Microsoft.Data.Sqlite;
-using ConnectAnalytics.Application.Ports;
-using ConnectAnalytics.Domain;
+using ConnectAnalyzer.Application.Ports;
+using ConnectAnalyzer.Domain;
 
-namespace ConnectAnalytics.Infrastructure.Outbound.Sqlite;
+namespace ConnectAnalyzer.Infrastructure.Outbound.Sqlite;
 
 public sealed class SqliteSalesStore(string connectionString) : ISalesStore
 {

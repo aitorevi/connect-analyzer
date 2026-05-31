@@ -1,10 +1,10 @@
 using System.Net;
 using System.Text;
-using ConnectAnalytics.Domain;
-using ConnectAnalytics.Infrastructure.Outbound.MockTxt;
+using ConnectAnalyzer.Domain;
+using ConnectAnalyzer.Infrastructure.Outbound.MockTxt;
 using Xunit;
 
-namespace ConnectAnalytics.Tests.Infrastructure.Outbound;
+namespace ConnectAnalyzer.Tests.Infrastructure.Outbound;
 
 public class MockTxtSalesRepositoryTests
 {

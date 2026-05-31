@@ -3,7 +3,7 @@ WORKDIR /src
 COPY *.csproj ./
 RUN dotnet restore
 COPY . .
-RUN dotnet publish ConnectAnalytics.csproj -c Release -o /app --no-restore
+RUN dotnet publish ConnectAnalyzer.csproj -c Release -o /app --no-restore
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0
 WORKDIR /app
@@ -12,4 +12,4 @@ ENV ASPNETCORE_URLS=http://+:8080
 EXPOSE 8080
 # Run as the image's built-in non-root user instead of root.
 USER $APP_UID
-ENTRYPOINT ["dotnet", "ConnectAnalytics.dll"]
+ENTRYPOINT ["dotnet", "ConnectAnalyzer.dll"]

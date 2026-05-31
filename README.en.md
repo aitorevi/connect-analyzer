@@ -156,7 +156,7 @@ Edit the files in `sap-mock/data/` and rebuild the image (`docker compose up --b
 If you have the **.NET 10 SDK** installed, you can also run them directly:
 
 ```bash
-cd backend && dotnet test tests/ConnectAnalytics.Tests/ConnectAnalytics.Tests.csproj
+cd backend && dotnet test tests/ConnectAnalyzer.Tests/ConnectAnalyzer.Tests.csproj
 ```
 
 **Frontend**:

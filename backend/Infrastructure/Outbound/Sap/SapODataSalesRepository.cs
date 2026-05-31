@@ -1,10 +1,10 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using ConnectAnalytics.Application.Ports;
-using ConnectAnalytics.Domain;
+using ConnectAnalyzer.Application.Ports;
+using ConnectAnalyzer.Domain;
 
-namespace ConnectAnalytics.Infrastructure.Outbound.Sap;
+namespace ConnectAnalyzer.Infrastructure.Outbound.Sap;
 
 public sealed class SapODataSalesRepository(HttpClient http) : ISalesRepository
 {

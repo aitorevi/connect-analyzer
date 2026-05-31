@@ -3,10 +3,10 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using ConnectAnalytics.Application.Ports;
-using ConnectAnalytics.Domain;
+using ConnectAnalyzer.Application.Ports;
+using ConnectAnalyzer.Domain;
 
-namespace ConnectAnalytics.Infrastructure.Outbound.Shopify;
+namespace ConnectAnalyzer.Infrastructure.Outbound.Shopify;
 
 // TODO: paginate via the Link header's `rel="next"` cursor. The MVP fetches a single page of
 public sealed class ShopifyOrdersRepository(

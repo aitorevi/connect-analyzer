@@ -29,7 +29,7 @@ Extra arguments are forwarded straight to `dotnet test`. Common cases:
 
 ## What it does
 
-Runs `dotnet test tests/ConnectAnalytics.Tests/ConnectAnalytics.Tests.csproj` (xUnit) against
+Runs `dotnet test tests/ConnectAnalyzer.Tests/ConnectAnalyzer.Tests.csproj` (xUnit) against
 `mcr.microsoft.com/dotnet/sdk:10.0`, mounting `backend/` into the container.
 
 ## After running

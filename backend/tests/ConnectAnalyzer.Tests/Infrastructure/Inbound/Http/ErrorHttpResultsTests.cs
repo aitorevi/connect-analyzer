@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using ConnectAnalytics.Domain;
-using ConnectAnalytics.Infrastructure.Inbound.Http;
+using ConnectAnalyzer.Domain;
+using ConnectAnalyzer.Infrastructure.Inbound.Http;
 using Xunit;
 
-namespace ConnectAnalytics.Tests.Infrastructure.Inbound.Http;
+namespace ConnectAnalyzer.Tests.Infrastructure.Inbound.Http;
 
 public class ErrorHttpResultsTests
 {
