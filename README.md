@@ -1,6 +1,6 @@
 # SAP Analyzer
 
-[![CI](https://github.com/aitorevi/sap-analyzer/actions/workflows/ci.yml/badge.svg)](https://github.com/aitorevi/sap-analyzer/actions/workflows/ci.yml)
+[![CI](https://github.com/aitorevi/connect-analyzer/actions/workflows/ci.yml/badge.svg)](https://github.com/aitorevi/connect-analyzer/actions/workflows/ci.yml)
 
 🇪🇸 Español · [🇬🇧 English](./README.en.md)
 

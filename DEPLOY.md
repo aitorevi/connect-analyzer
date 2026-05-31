@@ -17,7 +17,7 @@ fetches the backend server-side, the demo flow is `Vercel (Next.js Server Compon
 The repo ships a [`render.yaml`](./render.yaml) Blueprint that declares both Web Services.
 
 1. Go to <https://dashboard.render.com> → **New +** → **Blueprint**.
-2. Connect your GitHub account and pick the `aitorevi/sap-analyzer` repository.
+2. Connect your GitHub account and pick the `aitorevi/connect-analyzer` repository.
 3. Render reads `render.yaml`, shows the two services it is about to create
    (`sap-analyzer-mock` and `sap-analyzer-api`, Free plan, Frankfurt) → **Apply**.
 4. The first build takes ~5 min per service. Watch the logs from each service page.
@@ -54,7 +54,7 @@ sandbox instead, in the **sap-analyzer-api** service:
 
 ## 2. Deploy the frontend (Vercel)
 
-In the Vercel dashboard: **Add New… → Project → Import the GitHub repo `aitorevi/sap-analyzer`**.
+In the Vercel dashboard: **Add New… → Project → Import the GitHub repo `aitorevi/connect-analyzer`**.
 
 - **Root Directory**: `frontend` (the Next.js app lives in this subfolder).
 - **Framework Preset**: Next.js (auto-detected).
