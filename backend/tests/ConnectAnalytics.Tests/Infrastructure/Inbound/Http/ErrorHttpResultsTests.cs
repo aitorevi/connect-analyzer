@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using SapAnalytics.Domain;
-using SapAnalytics.Infrastructure.Inbound.Http;
+using ConnectAnalytics.Domain;
+using ConnectAnalytics.Infrastructure.Inbound.Http;
 using Xunit;
 
-namespace SapAnalytics.Tests.Infrastructure.Inbound.Http;
+namespace ConnectAnalytics.Tests.Infrastructure.Inbound.Http;
 
 public class ErrorHttpResultsTests
 {

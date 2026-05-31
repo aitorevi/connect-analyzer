@@ -1,6 +1,6 @@
-using SapAnalytics.Domain;
+using ConnectAnalytics.Domain;
 
-namespace SapAnalytics.Application.Ports;
+namespace ConnectAnalytics.Application.Ports;
 
 // Outbound port. The application depends on this contract; concrete data sources
 // (mock, HANA, OData, ECC/RFC) are adapters that implement it.

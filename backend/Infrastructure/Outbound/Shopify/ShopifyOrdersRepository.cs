@@ -3,10 +3,10 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using SapAnalytics.Application.Ports;
-using SapAnalytics.Domain;
+using ConnectAnalytics.Application.Ports;
+using ConnectAnalytics.Domain;
 
-namespace SapAnalytics.Infrastructure.Outbound.Shopify;
+namespace ConnectAnalytics.Infrastructure.Outbound.Shopify;
 
 // Outbound adapter that reads sales from a real Shopify store via the Admin REST API.
 // One Shopify "order" carries N "line_items"; each line_item becomes one domain Sale.

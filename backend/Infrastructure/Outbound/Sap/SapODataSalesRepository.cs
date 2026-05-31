@@ -1,10 +1,10 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using SapAnalytics.Application.Ports;
-using SapAnalytics.Domain;
+using ConnectAnalytics.Application.Ports;
+using ConnectAnalytics.Domain;
 
-namespace SapAnalytics.Infrastructure.Outbound.Sap;
+namespace ConnectAnalytics.Infrastructure.Outbound.Sap;
 
 // Outbound adapter that reads sales from a real SAP S/4HANA OData service (the free
 // SAP Business Accelerator Hub sandbox, API_SALES_ORDER_SRV). This is the only class that

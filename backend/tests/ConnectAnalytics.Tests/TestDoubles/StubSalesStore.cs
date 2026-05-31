@@ -1,7 +1,7 @@
-using SapAnalytics.Application.Ports;
-using SapAnalytics.Domain;
+using ConnectAnalytics.Application.Ports;
+using ConnectAnalytics.Domain;
 
-namespace SapAnalytics.Tests.TestDoubles;
+namespace ConnectAnalytics.Tests.TestDoubles;
 
 // Configurable test double for the store port. ReadAllAsync returns a preset Result; SaveAsync
 // records what it was given and returns success unless a save error was configured. Touches no

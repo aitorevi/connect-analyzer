@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SapAnalytics", "SapAnalytics.csproj", "{C27EEBD7-8BF6-4EF3-A25E-627D864BF174}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectAnalytics", "ConnectAnalytics.csproj", "{C27EEBD7-8BF6-4EF3-A25E-627D864BF174}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SapAnalytics.Tests", "tests\SapAnalytics.Tests\SapAnalytics.Tests.csproj", "{D5850D81-0164-46A3-93CD-F11FD54B1825}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectAnalytics.Tests", "tests\ConnectAnalytics.Tests\ConnectAnalytics.Tests.csproj", "{D5850D81-0164-46A3-93CD-F11FD54B1825}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

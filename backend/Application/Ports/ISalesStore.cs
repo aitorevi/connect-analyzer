@@ -1,6 +1,6 @@
-using SapAnalytics.Domain;
+using ConnectAnalytics.Domain;
 
-namespace SapAnalytics.Application.Ports;
+namespace ConnectAnalytics.Application.Ports;
 
 // Outbound port for the application's own store of sales. It is separate from ISalesRepository
 // (the upstream source): ingestion writes here, analytics read from here. The concrete store

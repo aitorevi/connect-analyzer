@@ -5,12 +5,12 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using SapAnalytics.Application.Ports;
-using SapAnalytics.Domain;
-using SapAnalytics.Tests.TestDoubles;
+using ConnectAnalytics.Application.Ports;
+using ConnectAnalytics.Domain;
+using ConnectAnalytics.Tests.TestDoubles;
 using Xunit;
 
-namespace SapAnalytics.Tests.Api;
+namespace ConnectAnalytics.Tests.Api;
 
 // Analytics endpoints read from the store, so these wire a stub store pre-loaded with sales.
 public class SalesEndpointsTests(SalesEndpointsTests.Factory factory)

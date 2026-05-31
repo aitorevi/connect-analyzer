@@ -1,7 +1,7 @@
-using SapAnalytics.Domain;
+using ConnectAnalytics.Domain;
 using Xunit;
 
-namespace SapAnalytics.Tests.Domain;
+namespace ConnectAnalytics.Tests.Domain;
 
 public class ResultExtensionsTests
 {

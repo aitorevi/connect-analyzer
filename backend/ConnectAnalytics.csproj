@@ -4,8 +4,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>SapAnalytics</RootNamespace>
-    <AssemblyName>SapAnalytics</AssemblyName>
+    <RootNamespace>ConnectAnalytics</RootNamespace>
+    <AssemblyName>ConnectAnalytics</AssemblyName>
     <!-- tests/ is its own project; keep the SDK Web auto-include from picking it up. -->
     <DefaultItemExcludes>$(DefaultItemExcludes);tests/**</DefaultItemExcludes>
   </PropertyGroup>

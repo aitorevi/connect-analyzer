@@ -1,9 +1,9 @@
-using SapAnalytics.Application;
-using SapAnalytics.Application.Ports;
-using SapAnalytics.Infrastructure.Outbound.MockTxt;
-using SapAnalytics.Infrastructure.Outbound.Sap;
-using SapAnalytics.Infrastructure.Outbound.Shopify;
-using SapAnalytics.Infrastructure.Outbound.Sqlite;
+using ConnectAnalytics.Application;
+using ConnectAnalytics.Application.Ports;
+using ConnectAnalytics.Infrastructure.Outbound.MockTxt;
+using ConnectAnalytics.Infrastructure.Outbound.Sap;
+using ConnectAnalytics.Infrastructure.Outbound.Shopify;
+using ConnectAnalytics.Infrastructure.Outbound.Sqlite;
 
 var builder = WebApplication.CreateBuilder(args);
 

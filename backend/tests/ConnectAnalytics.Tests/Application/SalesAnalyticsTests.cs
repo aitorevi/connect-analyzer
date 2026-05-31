@@ -1,9 +1,9 @@
-using SapAnalytics.Application;
-using SapAnalytics.Domain;
-using SapAnalytics.Tests.TestDoubles;
+using ConnectAnalytics.Application;
+using ConnectAnalytics.Domain;
+using ConnectAnalytics.Tests.TestDoubles;
 using Xunit;
 
-namespace SapAnalytics.Tests.Application;
+namespace ConnectAnalytics.Tests.Application;
 
 public class SalesAnalyticsTests
 {
