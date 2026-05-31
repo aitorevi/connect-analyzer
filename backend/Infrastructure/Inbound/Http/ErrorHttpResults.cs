@@ -12,6 +12,7 @@ public static class ErrorHttpResults
     {
         ErrorType.NotFound => StatusCodes.Status404NotFound,
         ErrorType.Validation => StatusCodes.Status400BadRequest,
+        ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
         ErrorType.Unavailable => StatusCodes.Status502BadGateway,
         ErrorType.Unexpected => StatusCodes.Status500InternalServerError,
         _ => StatusCodes.Status500InternalServerError,
