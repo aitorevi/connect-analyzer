@@ -33,7 +33,10 @@ public sealed class ShopifyOrdersRepository(
 
     private async Task<Result<IReadOnlyList<Sale>>> FetchOrdersAsync(string token, CancellationToken ct)
     {
-        var resource = $"/admin/api/{apiVersion}/orders.json?status=any&limit=250";
+        // status=any captures both open and closed orders; financial_status=paid filters out
+        // cancelled, pending, refunded and voided orders so the analytics reflect actual revenue
+        // and match what the merchant sees in the Shopify admin.
+        var resource = $"/admin/api/{apiVersion}/orders.json?status=any&financial_status=paid&limit=250";
         using var request = new HttpRequestMessage(HttpMethod.Get, resource);
         request.Headers.Add("X-Shopify-Access-Token", token);
 
@@ -69,10 +72,20 @@ public sealed class ShopifyOrdersRepository(
         }
         catch (JsonException ex)
         {
-            return Result<IReadOnlyList<Sale>>.Failure(Error.Validation(
+            // A 2xx response whose body is not the JSON shape we expect is unexpected (mirrors
+            // the SAP adapter), not Validation: the caller's request was perfectly well-formed.
+            return Result<IReadOnlyList<Sale>>.Failure(Error.Unexpected(
                 $"Malformed payload from the Shopify Admin API: {ex.Message}"));
         }
-        // OperationCanceledException intentionally propagates.
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            // HttpClient throws TaskCanceledException (an OperationCanceledException) when its
+            // own Timeout (default 100s) elapses, even though the caller's token wasn't cancelled.
+            // Treat that as the source being unavailable, not as a business cancellation.
+            return Result<IReadOnlyList<Sale>>.Failure(Error.Unavailable(
+                "Shopify request timed out."));
+        }
+        // OperationCanceledException intentionally propagates when the caller cancelled.
     }
 
     // Flattens one Shopify order into one Sale per line item, skipping rows missing the
@@ -80,10 +93,14 @@ public sealed class ShopifyOrdersRepository(
     private static IEnumerable<Sale> LineItemsAsSales(OrderDto order)
     {
         if (!DateTimeOffset.TryParse(order.CreatedAt, CultureInfo.InvariantCulture,
-                DateTimeStyles.AssumeUniversal | DateTimeStyles.AdjustToUniversal, out var createdAt))
+                DateTimeStyles.AssumeUniversal, out var createdAt))
             yield break;
 
-        var date = DateOnly.FromDateTime(createdAt.UtcDateTime);
+        // Use the wall-clock date of the order's offset (store-local) rather than UTC. The
+        // Shopify admin and the merchant's daily reports aggregate by store-local date; an
+        // order placed at 22:00 PST on Jan 15 is "Jan 15 revenue" to the merchant, not
+        // "Jan 16" as `UtcDateTime` would attribute it.
+        var date = DateOnly.FromDateTime(createdAt.Date);
         // Guest checkouts have no customer; map them to a stable "guest" id so the analytics
         // still aggregate them instead of dropping the line.
         var customerId = order.Customer?.Id?.ToString(CultureInfo.InvariantCulture) ?? "guest";
@@ -95,7 +112,14 @@ public sealed class ShopifyOrdersRepository(
             if (!decimal.TryParse(line.Price, NumberStyles.Number, CultureInfo.InvariantCulture, out var unitPrice))
                 continue;
 
-            yield return new Sale(date, customerId, line.Title, line.Quantity, unitPrice * line.Quantity);
+            // Subtract the line's discount so Sale.Amount stays net (matches NetAmount semantics
+            // of the SAP adapter and what the merchant sees in the Shopify admin). total_discount
+            // covers both line-level discounts and order-level promos prorated to this line.
+            if (!decimal.TryParse(line.TotalDiscount ?? "0", NumberStyles.Number, CultureInfo.InvariantCulture, out var discount))
+                discount = 0m;
+
+            yield return new Sale(date, customerId, line.Title, line.Quantity,
+                (unitPrice * line.Quantity) - discount);
         }
     }
 
@@ -114,5 +138,6 @@ public sealed class ShopifyOrdersRepository(
     private sealed record LineItemDto(
         [property: JsonPropertyName("title")] string? Title,
         [property: JsonPropertyName("quantity")] int Quantity,
-        [property: JsonPropertyName("price")] string? Price);
+        [property: JsonPropertyName("price")] string? Price,
+        [property: JsonPropertyName("total_discount")] string? TotalDiscount);
 }

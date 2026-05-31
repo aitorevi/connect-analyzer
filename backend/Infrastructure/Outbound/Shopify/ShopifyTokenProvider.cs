@@ -49,7 +49,7 @@ public sealed class ShopifyTokenProvider(HttpClient http, string clientId, strin
 
                 var payload = await response.Content.ReadFromJsonAsync<TokenResponse>(ct);
                 if (payload is null || string.IsNullOrWhiteSpace(payload.AccessToken))
-                    return Result<string>.Failure(Error.Validation(
+                    return Result<string>.Failure(Error.Unexpected(
                         "Shopify OAuth response did not contain an access_token."));
 
                 _cachedToken = payload.AccessToken;
@@ -62,15 +62,25 @@ public sealed class ShopifyTokenProvider(HttpClient http, string clientId, strin
             }
             catch (JsonException ex)
             {
-                return Result<string>.Failure(Error.Validation(
+                // A 2xx response with a body that is not the JSON shape we expect is unexpected,
+                // not Validation: the caller's request was perfectly well-formed.
+                return Result<string>.Failure(Error.Unexpected(
                     $"Malformed payload from Shopify's OAuth endpoint: {ex.Message}"));
+            }
+            catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+            {
+                // HttpClient throws TaskCanceledException (an OCE) on its internal Timeout even
+                // when the caller's token hasn't been cancelled. Treat as the source being
+                // unavailable, not as a business cancellation.
+                return Result<string>.Failure(Error.Unavailable(
+                    "Shopify OAuth request timed out."));
             }
         }
         finally
         {
             _gate.Release();
         }
-        // OperationCanceledException intentionally propagates: cancellation is the caller's decision.
+        // OperationCanceledException intentionally propagates when the caller cancelled.
     }
 
     private sealed record TokenRequest(
