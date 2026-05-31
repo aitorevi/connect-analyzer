@@ -14,8 +14,10 @@ La dependencia **siempre apunta hacia el dominio**. Capas:
     **fuente** upstream) e `ISalesStore` (puerto del **almacén** propio).
 - **`Infrastructure/Inbound/Http/`** — adaptador de entrada: controladores que traducen HTTP ↔ aplicación.
 - **`Infrastructure/Outbound/`** — adaptadores de salida. Fuente: `MockTxt/MockTxtSalesRepository` (fichero
-  del mock) y `Sap/SapODataSalesRepository` (SAP S/4HANA real vía OData, sandbox del Business Accelerator
-  Hub). Almacén: `Sqlite/SqliteSalesStore` (SQLite con SQL a mano, sin ORM).
+  del mock), `Sap/SapODataSalesRepository` (SAP S/4HANA real vía OData, sandbox del Business Accelerator
+  Hub) y `Shopify/ShopifyOrdersRepository` (tienda real de Shopify vía Admin REST, con
+  `Shopify/ShopifyTokenProvider` que cachea el access token del Client Credentials Grant).
+  Almacén: `Sqlite/SqliteSalesStore` (SQLite con SQL a mano, sin ORM).
 - **`Program.cs`** — composición/DI: cablea cada puerto con su adaptador concreto.
 
 ### Flujo de datos (dos puertos outbound)
@@ -30,9 +32,13 @@ RFC, ficheros) = escribir un adaptador outbound que lo implemente y cambiar **so
 `Program.cs`. Nada por encima del adaptador conoce la fuente. Regla **inviolable**: si algo parece requerir
 saltársela, parar y preguntar.
 
-**Selección de fuente por config**: `SalesSource` (`Mock` por defecto | `Sap`) elige qué adaptador se
-registra. `Sap` requiere el secreto `Sap:ApiKey` (env `Sap__ApiKey` o `dotnet user-secrets`; nunca en git;
-ver `.env.example`); la cabecera `APIKey` se inyecta en el composition root, así que el adaptador no la conoce.
+**Selección de fuente por config**: `SalesSource` (`Mock` por defecto | `Sap` | `Shopify`) elige qué
+adaptador se registra. `Sap` requiere el secreto `Sap:ApiKey` (env `Sap__ApiKey` o `dotnet user-secrets`;
+nunca en git; ver `.env.example`); la cabecera `APIKey` se inyecta en el composition root, así que el
+adaptador no la conoce. `Shopify` requiere `Shopify:StoreUrl`, `Shopify:ClientId` y el secreto
+`Shopify:ClientSecret`; el `ShopifyTokenProvider` intercambia esas credenciales por un access token
+(Client Credentials Grant) y lo cachea, así que el `ShopifyOrdersRepository` solo conoce el token —
+no las credenciales.
 
 ## Gestión de errores: `Result<T>` / `Error`
 
@@ -44,8 +50,9 @@ verdaderamente excepcional.
   - `Match(onSuccess, onFailure)` — abre el Result en el borde.
   - `Map(f)` — transforma el valor en Success; propaga el Failure sin tocarlo.
   - `Bind(f)` — encadena pasos que devuelven `Result` (corta en el primer Failure).
-- **`Error`** (`Domain/Error.cs`): record con `ErrorType { NotFound, Validation, Unavailable, Unexpected }`
-  + mensaje. Factories: `Error.NotFound(...)`, `Error.Validation(...)`, `Error.Unavailable(...)`, `Error.Unexpected(...)`.
+- **`Error`** (`Domain/Error.cs`): record con `ErrorType { NotFound, Validation, Unauthorized, Unavailable, Unexpected }`
+  + mensaje. Factories: `Error.NotFound(...)`, `Error.Validation(...)`, `Error.Unauthorized(...)`,
+  `Error.Unavailable(...)`, `Error.Unexpected(...)`.
 
 **Flujo por capas (no romperlo):**
 1. **Adaptador outbound**: captura las excepciones de infraestructura **en su borde** (p.ej.
@@ -54,8 +61,8 @@ verdaderamente excepcional.
 2. **Aplicación**: encadena con `Map`/`Bind` **sin desenvolver**; nunca hace `try/catch` ni inspecciona el error.
 3. **Controlador (inbound)**: **único sitio que abre el Result** con `Match` → `Ok(value)` o el traductor de error.
 4. **`Infrastructure/Inbound/Http/ErrorHttpResults`**: **único punto** de traducción `Error` → HTTP
-   (`ProblemDetails`/RFC 7807). Mapeo: `NotFound`→404, `Validation`→400, `Unavailable`→502, `Unexpected`→500.
-   El dominio nunca conoce HTTP.
+   (`ProblemDetails`/RFC 7807). Mapeo: `NotFound`→404, `Validation`→400, `Unauthorized`→401,
+   `Unavailable`→502, `Unexpected`→500. El dominio nunca conoce HTTP.
 
 ## Estilo C#
 

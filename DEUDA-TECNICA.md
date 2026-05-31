@@ -57,7 +57,50 @@ hace `GetByteArrayAsync` + `GetString` + LINQ: carga el fichero entero en memori
 
 ## Robustez
 
-### 5. Manejo global de excepciones
+### 5. Paginación de Shopify Admin REST
+
+[`ShopifyOrdersRepository`](backend/Infrastructure/Outbound/Shopify/ShopifyOrdersRepository.cs)
+solo lee la primera página de `orders.json` (`limit=250`).
+
+- **Por qué se pospone:** el dataset de prueba (`Start with test data`) de la tienda de
+  desarrollo cabe en una sola página, suficiente para validar el flujo end-to-end del MVP.
+- **Cuándo abordarla:** antes de apuntar a una tienda con más de 250 pedidos relevantes. La
+  paginación de la Admin REST se hace por la cabecera `Link: <…>; rel="next"`; hay que
+  iterar siguiendo ese cursor y respetar el rate-limit (40 calls/app/store en buckets de
+  leaky-bucket). Misma iteración que el TODO de `Retry-After` en 429.
+
+### 6. Refresco proactivo del token de Shopify
+
+[`ShopifyTokenProvider`](backend/Infrastructure/Outbound/Shopify/ShopifyTokenProvider.cs)
+cachea el access token durante la vida del proceso y no reacciona a 401 del endpoint de datos.
+
+- **Por qué se pospone:** los tokens de Client Credentials Grant de Shopify son offline y no
+  expiran salvo rotación/revocación manual; con el ciclo "deploy → reinicio" es suficiente.
+- **Cuándo abordarla:** cuando empecemos a rotar credenciales de Shopify sin reiniciar el
+  servicio (p.ej. integrándolo en un sistema de secret rotation). Invalidaría el cache al
+  primer 401 y reintentaría una vez antes de propagar el error.
+
+### 7. SQLite del backend vive en `/tmp` _(prioridad media)_
+
+`docker-compose.yml` y `render.yaml` apuntan `Sqlite__Path` a `/tmp/sales.db` porque la
+imagen `dotnet/aspnet:10.0` corre como `$APP_UID` (no-root) desde el commit
+`7d621bf` y `/app` (el `WORKDIR`) pertenece a root, así que el adaptador no puede
+crear el fichero ahí. `/tmp` es escribible por cualquier usuario pero **se borra al
+reiniciar el contenedor**, lo que tira la persistencia ingerida.
+
+- **Por qué se pospone:** el seed automático en `Program.cs` re-llena el store en cada
+  arranque (con reintentos exponenciales), así que la pérdida solo se nota como un
+  blip de unos segundos al reiniciar. Para un MVP con datos del mock o de una tienda
+  de desarrollo es asumible.
+- **Cuándo abordarla:** antes de tener datos reales que **no** se puedan re-ingestar
+  trivialmente, o cuando se quiera cache de respuestas analíticas. Opciones:
+  - Volumen Docker dedicado (`volumes: - sales-db:/var/lib/sap-analyzer`) y
+    `Sqlite__Path=/var/lib/sap-analyzer/sales.db`, ajustando ownership en el
+    Dockerfile (`mkdir … && chown $APP_UID`).
+  - En Render, cambiar a un disco persistente del servicio en vez de `/tmp`.
+- **Detectado:** durante la verificación end-to-end del MVP de Shopify (2026-05-31).
+
+### 8. Manejo global de excepciones
 
 No hay middleware de manejo de errores en [`Program.cs`](backend/Program.cs).
 

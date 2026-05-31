@@ -29,8 +29,9 @@ Tres piezas, cada una en su carpeta en la raíz, orquestadas con **Docker Compos
 ## Regla de arquitectura sagrada: el origen de datos vive tras un puerto
 
 El origen de los datos se aísla detrás del **puerto `ISalesRepository`** (`backend/Application/Ports/`).
-Es el único contrato que conoce de dónde vienen los datos. Cada fuente concreta (hoy el mock vía
-`MockTxtSalesRepository`; mañana SAP real vía OData, ficheros o RFC/BAPI) es un **adaptador outbound** que
+Es el único contrato que conoce de dónde vienen los datos. Cada fuente concreta (hoy: mock vía
+`MockTxtSalesRepository`, SAP real vía `SapODataSalesRepository`, tienda Shopify vía
+`ShopifyOrdersRepository`; mañana SAP real vía RFC/BAPI o ficheros) es un **adaptador outbound** que
 implementa ese puerto.
 
 - El resto del backend y **todo el frontend dependen siempre del contrato, nunca de la implementación**.

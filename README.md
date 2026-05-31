@@ -46,9 +46,9 @@ Tres piezas, cada una en su carpeta, orquestadas con **Docker Compose** en local
 | `frontend/`  | **Next.js** (App Router) + Recharts | `3000`                | Consume la API y pinta gráficos.                                   |
 
 > El backend usa **dos puertos outbound**:
-> - **`ISalesRepository`** — fuente de datos (mock o SAP real). Selector por config (`SalesSource`).
+> - **`ISalesRepository`** — fuente de datos (mock, SAP real o Shopify). Selector por config (`SalesSource`).
 > - **`ISalesStore`** — almacén local (SQLite). El caso de uso `IngestSales` lee de la fuente y guarda
->   en el almacén; la analítica lee del almacén. Cambiar de mock a SAP real, o de SQLite a Postgres,
+>   en el almacén; la analítica lee del almacén. Cambiar de mock a SAP real, a Shopify, o de SQLite a Postgres,
 >   = **escribir un adaptador nuevo**, sin tocar dominio ni aplicación.
 
 ## Stack
@@ -104,8 +104,8 @@ curl -X POST http://localhost:5080/api/sales/refresh
 ```
 
 Los errores esperables (origen no disponible, datos malformados) se devuelven como **ProblemDetails**
-(RFC 7807) con el status adecuado: `404` (NotFound), `400` (Validation), `502` (Unavailable),
-`500` (Unexpected).
+(RFC 7807) con el status adecuado: `404` (NotFound), `400` (Validation), `401` (Unauthorized),
+`502` (Unavailable), `500` (Unexpected).
 
 ## Desarrollo local
 
@@ -119,12 +119,19 @@ dotnet build                     # compila
 
 Configuración por variables de entorno / `appsettings` (ver también [`.env.example`](./.env.example)):
 
-- `SalesSource` — `Mock` (por defecto) o `Sap`. Selecciona qué adaptador de `ISalesRepository` se cablea.
+- `SalesSource` — `Mock` (por defecto), `Sap` o `Shopify`. Selecciona qué adaptador de `ISalesRepository` se cablea.
 - `Sap__ApiKey` — **secreto**, solo si `SalesSource=Sap`. API key del Business Accelerator Hub.
   Localmente: `dotnet user-secrets set "Sap:ApiKey" "<tu-key>"`.
 - `Sap__BaseUrl` — URL base del OData de SAP (por defecto el sandbox de `API_SALES_ORDER_SRV`).
 - `SapMock__BaseUrl` — URL del mock (en Docker: `http://sap-mock:8080`).
-- `Sqlite__Path` — ruta del fichero SQLite (por defecto `sales.db`; en Render usamos `/tmp/sales.db`).
+- `Shopify__StoreUrl` — solo si `SalesSource=Shopify`. URL de la dev store (p.ej.
+  `https://mi-tienda.myshopify.com`).
+- `Shopify__ClientId` — solo si `SalesSource=Shopify`. ID de cliente de la app del Dev Dashboard.
+- `Shopify__ClientSecret` — **secreto**, solo si `SalesSource=Shopify`. Se intercambia por un access
+  token vía Client Credentials Grant. Localmente: `dotnet user-secrets set "Shopify:ClientSecret" "<tu-secret>"`.
+- `Shopify__ApiVersion` — versión de la Admin API (por defecto `2025-01`).
+- `Sqlite__Path` — ruta del fichero SQLite (por defecto `sales.db`; en Render y en Docker Compose
+  usamos `/tmp/sales.db` porque el backend corre como usuario no-root).
 - `Cors__AllowedOrigins__0` — orígenes permitidos para el navegador (por defecto `http://localhost:3000`).
   **Nunca** ampliar a `AllowAnyOrigin`.
 
@@ -183,6 +190,7 @@ npm run test                     # modo watch
 │   │   └── Outbound/
 │   │       ├── MockTxt/                  #     adaptador del mock (.txt Latin-1)
 │   │       ├── Sap/                      #     adaptador OData del SAP real
+│   │       ├── Shopify/                  #     adaptador Shopify Admin REST (OAuth Client Credentials)
 │   │       └── Sqlite/                   #     adaptador SQLite (SQL a mano)
 │   ├── Program.cs                        #   composición / DI + seed con retry
 │   └── tests/                            #   xUnit (espejo de la estructura de src)
