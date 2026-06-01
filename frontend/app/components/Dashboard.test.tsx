@@ -3,7 +3,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import Dashboard from "./Dashboard";
 
 // Stub the charts so the test doesn't depend on Recharts/ResponsiveContainer layout.
-vi.mock("./ByProductChart", () => ({
+vi.mock("./ProductRevenueUnitsChart", () => ({
   default: ({ data }: { data: unknown[] }) => (
     <div data-testid="by-product">{data.length}</div>
   ),

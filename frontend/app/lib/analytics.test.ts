@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { computeKpis, revenueByDate } from "./analytics";
+import {
+  computeKpis,
+  productRevenueUnits,
+  revenueByDate,
+  salesCountByDate,
+} from "./analytics";
 import type { Sale } from "./dashboard";
 
 const sale = (date: string, amount: number, quantity = 1): Sale => ({
@@ -54,5 +59,60 @@ describe("computeKpis", () => {
     expect(kpis.avgTicket).toBe(0);
     expect(kpis.topProduct).toBeNull();
     expect(kpis.topCustomer).toBeNull();
+    expect(kpis.distinctCustomers).toBe(0);
+    expect(kpis.bestDayDate).toBeNull();
+  });
+
+  it("counts distinct customers/products and finds the best day", () => {
+    const sales: Sale[] = [
+      { date: "2026-01-01", customerId: "C1", productName: "A", quantity: 1, amount: 30 },
+      { date: "2026-01-01", customerId: "C2", productName: "B", quantity: 1, amount: 20 },
+      { date: "2026-01-02", customerId: "C1", productName: "A", quantity: 1, amount: 90 },
+    ];
+
+    const kpis = computeKpis(sales, [], []);
+
+    expect(kpis.distinctCustomers).toBe(2);
+    expect(kpis.distinctProducts).toBe(2);
+    expect(kpis.bestDayDate).toBe("2026-01-02");
+    expect(kpis.bestDayTotal).toBe(90);
+  });
+});
+
+describe("salesCountByDate", () => {
+  it("counts sales per day, sorted ascending", () => {
+    const result = salesCountByDate([
+      { date: "2026-01-02", customerId: "C1", productName: "A", quantity: 1, amount: 10 },
+      { date: "2026-01-01", customerId: "C1", productName: "A", quantity: 1, amount: 10 },
+      { date: "2026-01-02", customerId: "C2", productName: "B", quantity: 1, amount: 10 },
+    ]);
+
+    expect(result).toEqual([
+      { date: "2026-01-01", count: 1 },
+      { date: "2026-01-02", count: 2 },
+    ]);
+  });
+});
+
+describe("productRevenueUnits", () => {
+  it("joins backend revenue with units summed from raw sales, keeping order", () => {
+    const sales: Sale[] = [
+      { date: "2026-01-01", customerId: "C1", productName: "A", quantity: 3, amount: 60 },
+      { date: "2026-01-02", customerId: "C2", productName: "A", quantity: 2, amount: 40 },
+      { date: "2026-01-02", customerId: "C2", productName: "B", quantity: 5, amount: 50 },
+    ];
+
+    const result = productRevenueUnits(
+      [
+        { product: "A", totalAmount: 100 },
+        { product: "B", totalAmount: 50 },
+      ],
+      sales,
+    );
+
+    expect(result).toEqual([
+      { product: "A", revenue: 100, units: 5 },
+      { product: "B", revenue: 50, units: 5 },
+    ]);
   });
 });

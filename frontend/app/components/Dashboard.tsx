@@ -1,12 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import ByProductChart from "./ByProductChart";
+import ProductRevenueUnitsChart from "./ProductRevenueUnitsChart";
 import ByCustomerChart from "./ByCustomerChart";
 import RevenueOverTimeChart from "./RevenueOverTimeChart";
 import KpiCards from "./KpiCards";
 import ChartCard from "./ChartCard";
-import { computeKpis, revenueByDate } from "../lib/analytics";
+import {
+  computeKpis,
+  productRevenueUnits,
+  revenueByDate,
+  salesCountByDate,
+} from "../lib/analytics";
 import type {
   CustomerTotal,
   DashboardData,
@@ -50,6 +55,11 @@ export default function Dashboard({
     [sales, byProduct, byCustomer],
   );
   const overTime = useMemo(() => revenueByDate(sales), [sales]);
+  const salesCount = useMemo(() => salesCountByDate(sales), [sales]);
+  const productData = useMemo(
+    () => productRevenueUnits(byProduct, sales),
+    [byProduct, sales],
+  );
 
   // Re-triggers an ingestion each round, then checks for rows. On a cold free-tier stack the
   // first refresh 502s (the mock is asleep) but *wakes* it, so a later attempt succeeds — a
@@ -120,15 +130,19 @@ export default function Dashboard({
         </p>
       )}
 
-      <KpiCards kpis={kpis} />
+      <KpiCards
+        kpis={kpis}
+        revenueTrend={overTime.map((d) => d.total)}
+        salesTrend={salesCount.map((d) => d.count)}
+      />
 
       <ChartCard title="Revenue over time">
         <RevenueOverTimeChart data={overTime} />
       </ChartCard>
 
       <div className="chart-grid">
-        <ChartCard title="Total amount by product">
-          <ByProductChart data={byProduct} />
+        <ChartCard title="Revenue & units by product">
+          <ProductRevenueUnitsChart data={productData} />
         </ChartCard>
         <ChartCard title="Total amount by customer">
           <ByCustomerChart data={byCustomer} />

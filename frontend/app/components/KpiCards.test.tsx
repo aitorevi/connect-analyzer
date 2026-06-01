@@ -13,13 +13,20 @@ describe("KpiCards", () => {
           avgTicket: 123.45,
           topProduct: "Café Molido",
           topCustomer: "C1",
+          distinctCustomers: 5,
+          distinctProducts: 6,
+          bestDayDate: "2026-01-06",
+          bestDayTotal: 257,
         }}
+        revenueTrend={[10, 20, 15]}
+        salesTrend={[1, 3, 2]}
       />,
     );
 
     expect(screen.getByText("Total revenue")).toBeInTheDocument();
     expect(screen.getByText("1,234.5")).toBeInTheDocument();
     expect(screen.getByText("42")).toBeInTheDocument();
-    expect(screen.getByText("Café Molido")).toBeInTheDocument();
+    expect(screen.getByText("Customers")).toBeInTheDocument();
+    expect(screen.getByText("Products")).toBeInTheDocument();
   });
 });
