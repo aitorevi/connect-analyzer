@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Connect Analyzer",
-  description: "SAP data analysis — prototype with simulated data",
+  description: "Sales data analysis — prototype with simulated data",
 };
 
 export default function RootLayout({

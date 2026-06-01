@@ -11,12 +11,12 @@ services:
   # Simulated SAP source: nginx serving the pipe-delimited Latin-1 .txt.
   # ------------------------------------------------------------------
   - type: web
-    name: sap-analyzer-mock
+    name: connect-analyzer-mock
     runtime: docker
     plan: free
     region: frankfurt
-    dockerfilePath: ./sap-mock/Dockerfile
-    dockerContext: ./sap-mock
+    dockerfilePath: ./backend/mocks/sap/Dockerfile
+    dockerContext: ./backend/mocks/sap
     healthCheckPath: /sales.txt
     envVars:
       # The container binds to 8080; tell Render to route to that port.
@@ -27,7 +27,7 @@ services:
   # Backend API: .NET 10 reading from the mock (or real SAP) into SQLite.
   # ------------------------------------------------------------------
   - type: web
-    name: sap-analyzer-api
+    name: connect-analyzer-api
     runtime: docker
     plan: free
     region: frankfurt
@@ -43,7 +43,7 @@ services:
       # public URL. If Render had to suffix the mock service name (global uniqueness), edit
       # this value to match the actual onrender.com hostname after the first deploy.
       - key: SapMock__BaseUrl
-        value: https://sap-analyzer-mock.onrender.com
+        value: https://connect-analyzer-mock.onrender.com
       # Source for ISalesRepository: Mock (default, no secret) or Sap (requires Sap__ApiKey).
       - key: SalesSource
         value: Mock

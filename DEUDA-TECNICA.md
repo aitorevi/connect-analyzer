@@ -94,8 +94,8 @@ reiniciar el contenedor**, lo que tira la persistencia ingerida.
   de desarrollo es asumible.
 - **Cuándo abordarla:** antes de tener datos reales que **no** se puedan re-ingestar
   trivialmente, o cuando se quiera cache de respuestas analíticas. Opciones:
-  - Volumen Docker dedicado (`volumes: - sales-db:/var/lib/sap-analyzer`) y
-    `Sqlite__Path=/var/lib/sap-analyzer/sales.db`, ajustando ownership en el
+  - Volumen Docker dedicado (`volumes: - sales-db:/var/lib/connect-analyzer`) y
+    `Sqlite__Path=/var/lib/connect-analyzer/sales.db`, ajustando ownership en el
     Dockerfile (`mkdir … && chown $APP_UID`).
   - En Render, cambiar a un disco persistente del servicio en vez de `/tmp`.
 - **Detectado:** durante la verificación end-to-end del MVP de Shopify (2026-05-31).

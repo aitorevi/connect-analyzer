@@ -13,9 +13,9 @@ more analyses, filters, and only later real persistence and a real SAP source.
 
 | Piece        | URL                                                     | Hosting    |
 |--------------|---------------------------------------------------------|------------|
-| Dashboard    | <https://sap-analyzer.vercel.app>                       | Vercel     |
-| Backend API  | <https://sap-analyzer-api.onrender.com>                 | Render     |
-| Mock SAP     | <https://sap-analyzer-mock.onrender.com>                | Render     |
+| Dashboard    | <https://connect-analyzer.vercel.app>                   | Vercel     |
+| Backend API  | <https://connect-analyzer-api.onrender.com>             | Render     |
+| Mock SAP     | <https://connect-analyzer-mock.onrender.com>            | Render     |
 
 > Render's Free tier sleeps services after ~15 min without traffic, so the **first request after that
 > can take ~30-50 s** (cold start). Subsequent loads are instant. The backend retries the seed-on-startup
@@ -40,7 +40,7 @@ Three pieces, each in its own folder, orchestrated with **Docker Compose** local
 
 | Piece        | Tech                                | Port (host→internal)  | Role                                                                |
 |--------------|-------------------------------------|-----------------------|---------------------------------------------------------------------|
-| `sap-mock/`  | nginx (unprivileged)                | `8000 → 8080`         | Simulated data source. Serves a `.txt` mimicking an SAP export.     |
+| `backend/mocks/sap/` | nginx (unprivileged)        | `8000 → 8080`         | Simulated data source. Serves a `.txt` mimicking an SAP export.     |
 | `backend/`   | C# / **.NET 10** (Web API)          | `5080 → 8080`         | Reads from the source, persists in SQLite, and serves REST. Hexagonal architecture. |
 | `frontend/`  | **Next.js** (App Router) + Recharts | `3000`                | Consumes the API and renders charts.                                |
 
@@ -87,7 +87,7 @@ To stop: `Ctrl+C`, or `docker compose down` to remove the containers.
 
 ## API
 
-Local base: `http://localhost:5080` · Production: `https://sap-analyzer-api.onrender.com`
+Local base: `http://localhost:5080` · Production: `https://connect-analyzer-api.onrender.com`
 
 | Method | Endpoint                  | Response                                                                        |
 |--------|---------------------------|---------------------------------------------------------------------------------|
@@ -138,11 +138,11 @@ npm run lint                     # eslint
 ```
 
 - `BACKEND_URL` — backend URL (in Docker: `http://backend:8080`; default `http://localhost:5080`;
-  on Vercel it points to `https://sap-analyzer-api.onrender.com`).
+  on Vercel it points to `https://connect-analyzer-api.onrender.com`).
 
 ### Mock (nginx)
 
-Edit the files in `sap-mock/data/` and rebuild the image (`docker compose up --build sap-mock`).
+Edit the files in `backend/mocks/sap/data/` and rebuild the image (`docker compose up --build sap-mock`).
 
 ## Tests
 
@@ -184,11 +184,10 @@ npm run test                     # watch mode
 │   │       ├── Sap/                      #     real SAP OData adapter
 │   │       └── Sqlite/                   #     SQLite adapter (hand-written SQL)
 │   ├── Program.cs                        #   composition / DI + retrying seed
-│   └── tests/                            #   xUnit (mirrors src structure)
+│   ├── tests/                            #   xUnit (mirrors src structure)
+│   └── mocks/sap/                        #   SAP mock: nginx serving data/sales.txt (fixtures)
 ├── frontend/                             # Next.js (App Router) + Recharts
 │   └── app/                              #   page.tsx (Server Component) + components/
-├── sap-mock/                             # nginx serving data/sales.txt
-│   └── data/                             #   fictitious fixtures (committed)
 ├── scripts/test-backend.sh               # backend test runner (dockerised)
 ├── docker-compose.yml                    # local orchestration of the three pieces
 ├── render.yaml                           # Render Blueprint (backend + mock)
@@ -213,8 +212,8 @@ The mock mimics a real SAP export, so its files follow its quirks:
 ## Data and security
 
 - **Never commit secrets** (`.env`, credentials, tokens, **`Sap__ApiKey`**) or **real SAP data**.
-- Real data goes in `sap-mock/data-real/` or `sap-mock/private/` (both gitignored) or outside the repo.
-- The `.txt` files in `sap-mock/data/` are **purely fictitious fixtures** and are committed.
+- Real data goes in `backend/mocks/sap/data-real/` or `.../private/` (both gitignored) or outside the repo.
+- The `.txt` files in `backend/mocks/sap/data/` are **purely fictitious fixtures** and are committed.
 
 ## Further reading
 

@@ -19,22 +19,22 @@ The repo ships a [`render.yaml`](./render.yaml) Blueprint that declares both Web
 1. Go to <https://dashboard.render.com> → **New +** → **Blueprint**.
 2. Connect your GitHub account and pick the `aitorevi/connect-analyzer` repository.
 3. Render reads `render.yaml`, shows the two services it is about to create
-   (`sap-analyzer-mock` and `sap-analyzer-api`, Free plan, Frankfurt) → **Apply**.
+   (`connect-analyzer-mock` and `connect-analyzer-api`, Free plan, Frankfurt) → **Apply**.
 4. The first build takes ~5 min per service. Watch the logs from each service page.
 
 Render assigns:
-- Mock: `https://sap-analyzer-mock.onrender.com` (or a suffix if that name is taken).
-- API:  `https://sap-analyzer-api.onrender.com`
+- Mock: `https://connect-analyzer-mock.onrender.com` (or a suffix if that name is taken).
+- API:  `https://connect-analyzer-api.onrender.com`
 
-> If Render had to suffix the mock name, edit `SapMock__BaseUrl` in the **sap-analyzer-api**
+> If Render had to suffix the mock name, edit `SapMock__BaseUrl` in the **connect-analyzer-api**
 > service's environment to the actual mock hostname, then **Manual Deploy** → **Clear build cache & deploy**.
 
 ### Smoke-test
 
 ```bash
-curl -s https://sap-analyzer-mock.onrender.com/sales.txt | head -3
-curl -s https://sap-analyzer-api.onrender.com/api/sales | head
-curl -X POST https://sap-analyzer-api.onrender.com/api/sales/refresh   # forces re-ingestion
+curl -s https://connect-analyzer-mock.onrender.com/sales.txt | head -3
+curl -s https://connect-analyzer-api.onrender.com/api/sales | head
+curl -X POST https://connect-analyzer-api.onrender.com/api/sales/refresh   # forces re-ingestion
 ```
 
 The first call may take 30-50 s if the service was sleeping (Free Web Services nap after ~15 min
@@ -43,7 +43,7 @@ without traffic).
 ### Optional: switch to real SAP data
 
 By default the backend uses the mock (`SalesSource=Mock`). To pull from the real SAP S/4HANA OData
-sandbox instead, in the **sap-analyzer-api** service:
+sandbox instead, in the **connect-analyzer-api** service:
 
 1. **Environment** tab → set `Sap__ApiKey` (Secret) to your Business Accelerator Hub key.
 2. Change `SalesSource` to `Sap`.
@@ -59,7 +59,7 @@ In the Vercel dashboard: **Add New… → Project → Import the GitHub repo `ai
 - **Root Directory**: `frontend` (the Next.js app lives in this subfolder).
 - **Framework Preset**: Next.js (auto-detected).
 - **Environment Variables**:
-  - `BACKEND_URL` = `https://sap-analyzer-api.onrender.com`
+  - `BACKEND_URL` = `https://connect-analyzer-api.onrender.com`
 
 Click **Deploy**. Vercel builds with `next build` and serves the dashboard.
 
@@ -67,7 +67,7 @@ Click **Deploy**. Vercel builds with `next build` and serves the dashboard.
 
 `page.tsx` fetches the backend **server-side**, so the browser never calls the backend directly — CORS
 is not exercised today. If you later add a client-side fetch, restrict the backend's CORS origin in the
-**sap-analyzer-api** service environment:
+**connect-analyzer-api** service environment:
 
 ```
 Cors__AllowedOrigins__0 = https://<your-frontend>.vercel.app
