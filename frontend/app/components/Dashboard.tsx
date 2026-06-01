@@ -30,17 +30,19 @@ export default function Dashboard({ initialByProduct, initialByCustomer }: Props
 
   const hasData = byProduct.length > 0 || byCustomer.length > 0;
 
-  // Triggers a re-ingestion, then polls until rows appear or we exhaust the attempts.
-  // No synchronous state updates: every setState happens after an await.
+  // Re-triggers an ingestion each round, then checks for rows. On a cold free-tier stack the
+  // first refresh 502s (the mock is asleep) but *wakes* it, so a later attempt succeeds — a
+  // single refresh isn't enough. No synchronous state updates: every setState is post-await.
   const poll = useCallback(async () => {
     if (running.current) return;
     running.current = true;
 
-    // Fire-and-forget re-ingestion; the polling below picks up the result.
-    fetch("/api/dashboard", { method: "POST" }).catch(() => {});
-
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-      await delay(POLL_INTERVAL_MS);
+      try {
+        await fetch("/api/dashboard", { method: "POST" });
+      } catch {
+        // ignore — the GET below decides whether we have data
+      }
       try {
         const res = await fetch("/api/dashboard", { cache: "no-store" });
         if (res.ok) {
@@ -56,6 +58,7 @@ export default function Dashboard({ initialByProduct, initialByCustomer }: Props
       } catch {
         // keep polling — a cold backend may still be waking up
       }
+      await delay(POLL_INTERVAL_MS);
     }
 
     setWarming(false);
