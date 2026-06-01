@@ -1,11 +1,30 @@
 import { describe, expect, it } from "vitest";
 import {
   computeKpis,
+  customerTotals,
+  dateRange,
+  filterSales,
   productRevenueUnits,
+  productTotals,
   revenueByDate,
   salesCountByDate,
+  uniqueProducts,
 } from "./analytics";
 import type { Sale } from "./dashboard";
+
+const S = (date: string, productName: string, customerId: string, amount: number): Sale => ({
+  date,
+  productName,
+  customerId,
+  quantity: 1,
+  amount,
+});
+
+const SAMPLE: Sale[] = [
+  S("2026-01-01", "A", "C1", 30),
+  S("2026-01-02", "B", "C2", 20),
+  S("2026-01-03", "A", "C2", 50),
+];
 
 const sale = (date: string, amount: number, quantity = 1): Sale => ({
   date,
@@ -114,5 +133,58 @@ describe("productRevenueUnits", () => {
       { product: "A", revenue: 100, units: 5 },
       { product: "B", revenue: 50, units: 5 },
     ]);
+  });
+});
+
+describe("filterSales", () => {
+  it("filters by inclusive date range", () => {
+    const result = filterSales(SAMPLE, {
+      from: "2026-01-02",
+      to: "2026-01-02",
+      products: [],
+      customers: [],
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].productName).toBe("B");
+  });
+
+  it("filters by selected products and customers", () => {
+    const result = filterSales(SAMPLE, {
+      from: null,
+      to: null,
+      products: ["A"],
+      customers: ["C2"],
+    });
+    expect(result).toEqual([S("2026-01-03", "A", "C2", 50)]);
+  });
+
+  it("returns all sales when no filter is set", () => {
+    expect(
+      filterSales(SAMPLE, { from: null, to: null, products: [], customers: [] }),
+    ).toHaveLength(3);
+  });
+});
+
+describe("productTotals / customerTotals", () => {
+  it("groups and sorts by amount desc", () => {
+    expect(productTotals(SAMPLE)).toEqual([
+      { product: "A", totalAmount: 80 },
+      { product: "B", totalAmount: 20 },
+    ]);
+    expect(customerTotals(SAMPLE)).toEqual([
+      { customerId: "C2", totalAmount: 70 },
+      { customerId: "C1", totalAmount: 30 },
+    ]);
+  });
+});
+
+describe("dateRange / uniqueProducts", () => {
+  it("returns the min and max dates and the sorted distinct products", () => {
+    expect(dateRange(SAMPLE)).toEqual({ min: "2026-01-01", max: "2026-01-03" });
+    expect(uniqueProducts(SAMPLE)).toEqual(["A", "B"]);
+  });
+
+  it("handles an empty dataset", () => {
+    expect(dateRange([])).toEqual({ min: null, max: null });
   });
 });
