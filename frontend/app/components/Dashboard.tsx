@@ -6,64 +6,64 @@ import ByCustomerChart from "./ByCustomerChart";
 import RevenueOverTimeChart from "./RevenueOverTimeChart";
 import KpiCards from "./KpiCards";
 import ChartCard from "./ChartCard";
+import FilterBar from "./FilterBar";
 import {
+  EMPTY_FILTERS,
   computeKpis,
+  customerTotals,
+  dateRange,
+  filterSales,
+  hasActiveFilters,
   productRevenueUnits,
+  productTotals,
   revenueByDate,
   salesCountByDate,
+  uniqueCustomers,
+  uniqueProducts,
+  type Filters,
 } from "../lib/analytics";
-import type {
-  CustomerTotal,
-  DashboardData,
-  ProductTotal,
-  Sale,
-} from "../lib/dashboard";
+import type { DashboardData, Sale } from "../lib/dashboard";
 
-type Props = {
-  initialByProduct: ProductTotal[];
-  initialByCustomer: CustomerTotal[];
-  initialSales: Sale[];
-};
+type Props = { initialSales: Sale[] };
 
 const POLL_INTERVAL_MS = 5000;
 const MAX_ATTEMPTS = 30; // ~2.5 min, covers a free-tier mock + backend cold start
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Wraps the dashboard and self-heals on a free-tier cold start: when we render with no data
-// (the store is empty until the backend re-seeds from the sleeping mock) we re-trigger a
-// refresh and poll until rows appear, instead of leaving a dead "No hay datos".
-export default function Dashboard({
-  initialByProduct,
-  initialByCustomer,
-  initialSales,
-}: Props) {
-  const initialEmpty =
-    initialByProduct.length === 0 && initialByCustomer.length === 0;
+// Owns the raw sales + filter state and derives every aggregate client-side, so the date
+// range and product/customer filters recompute the whole dashboard consistently. Also
+// self-heals on a free-tier cold start (re-trigger refresh + poll until rows appear).
+export default function Dashboard({ initialSales }: Props) {
+  const initialEmpty = initialSales.length === 0;
 
-  const [byProduct, setByProduct] = useState(initialByProduct);
-  const [byCustomer, setByCustomer] = useState(initialByCustomer);
   const [sales, setSales] = useState(initialSales);
+  const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [warming, setWarming] = useState(initialEmpty);
   const [gaveUp, setGaveUp] = useState(false);
   const running = useRef(false);
 
-  const hasData = byProduct.length > 0 || byCustomer.length > 0;
+  const hasData = sales.length > 0;
+  const active = hasActiveFilters(filters);
 
+  const range = useMemo(() => dateRange(sales), [sales]);
+  const productOptions = useMemo(() => uniqueProducts(sales), [sales]);
+  const customerOptions = useMemo(() => uniqueCustomers(sales), [sales]);
+
+  const filtered = useMemo(() => filterSales(sales, filters), [sales, filters]);
+  const byProduct = useMemo(() => productTotals(filtered), [filtered]);
+  const byCustomer = useMemo(() => customerTotals(filtered), [filtered]);
   const kpis = useMemo(
-    () => computeKpis(sales, byProduct, byCustomer),
-    [sales, byProduct, byCustomer],
+    () => computeKpis(filtered, byProduct, byCustomer),
+    [filtered, byProduct, byCustomer],
   );
-  const overTime = useMemo(() => revenueByDate(sales), [sales]);
-  const salesCount = useMemo(() => salesCountByDate(sales), [sales]);
+  const overTime = useMemo(() => revenueByDate(filtered), [filtered]);
+  const salesCount = useMemo(() => salesCountByDate(filtered), [filtered]);
   const productData = useMemo(
-    () => productRevenueUnits(byProduct, sales),
-    [byProduct, sales],
+    () => productRevenueUnits(byProduct, filtered),
+    [byProduct, filtered],
   );
 
-  // Re-triggers an ingestion each round, then checks for rows. On a cold free-tier stack the
-  // first refresh 502s (the mock is asleep) but *wakes* it, so a later attempt succeeds — a
-  // single refresh isn't enough. No synchronous state updates: every setState is post-await.
   const poll = useCallback(async () => {
     if (running.current) return;
     running.current = true;
@@ -78,9 +78,7 @@ export default function Dashboard({
         const res = await fetch("/api/dashboard", { cache: "no-store" });
         if (res.ok) {
           const data: DashboardData = await res.json();
-          if (data.byProduct.length > 0 || data.byCustomer.length > 0) {
-            setByProduct(data.byProduct);
-            setByCustomer(data.byCustomer);
+          if (data.sales.length > 0) {
             setSales(data.sales);
             setWarming(false);
             running.current = false;
@@ -97,12 +95,6 @@ export default function Dashboard({
     setGaveUp(true);
     running.current = false;
   }, []);
-
-  const retry = useCallback(() => {
-    setGaveUp(false);
-    setWarming(true);
-    poll();
-  }, [poll]);
 
   useEffect(() => {
     // Mount only: if SSR already delivered data we never warm up. Deferred so the async
@@ -124,8 +116,29 @@ export default function Dashboard({
       {gaveUp && !hasData && (
         <p className="subtitle" role="alert">
           La demo sigue arrancando.{" "}
-          <button type="button" onClick={retry}>
+          <button type="button" onClick={() => { setGaveUp(false); setWarming(true); poll(); }}>
             Reintentar
+          </button>
+        </p>
+      )}
+
+      {hasData && (
+        <FilterBar
+          filters={filters}
+          onChange={setFilters}
+          onReset={() => setFilters(EMPTY_FILTERS)}
+          range={range}
+          productOptions={productOptions}
+          customerOptions={customerOptions}
+          active={active}
+        />
+      )}
+
+      {hasData && filtered.length === 0 && (
+        <p className="subtitle" role="status">
+          No hay ventas para los filtros seleccionados.{" "}
+          <button type="button" onClick={() => setFilters(EMPTY_FILTERS)}>
+            Limpiar filtros
           </button>
         </p>
       )}

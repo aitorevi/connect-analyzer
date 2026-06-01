@@ -91,3 +91,81 @@ export function computeKpis(
     bestDayTotal: daily.length > 0 ? best.total : 0,
   };
 }
+
+// --- Filtering & client-side aggregates -----------------------------------
+// With filters, the backend's precomputed by-product/by-customer would be stale, so the
+// dashboard derives every aggregate from the (filtered) raw sales instead.
+
+export type Filters = {
+  from: string | null; // inclusive ISO date, null = no lower bound
+  to: string | null; // inclusive ISO date, null = no upper bound
+  products: string[]; // empty = all products
+  customers: string[]; // empty = all customers
+};
+
+export const EMPTY_FILTERS: Filters = {
+  from: null,
+  to: null,
+  products: [],
+  customers: [],
+};
+
+// ISO YYYY-MM-DD compares lexicographically the same as chronologically.
+export function filterSales(sales: Sale[], filters: Filters): Sale[] {
+  const products = filters.products.length > 0 ? new Set(filters.products) : null;
+  const customers = filters.customers.length > 0 ? new Set(filters.customers) : null;
+  return sales.filter(
+    (s) =>
+      (!filters.from || s.date >= filters.from) &&
+      (!filters.to || s.date <= filters.to) &&
+      (!products || products.has(s.productName)) &&
+      (!customers || customers.has(s.customerId)),
+  );
+}
+
+export function hasActiveFilters(filters: Filters): boolean {
+  return (
+    filters.from !== null ||
+    filters.to !== null ||
+    filters.products.length > 0 ||
+    filters.customers.length > 0
+  );
+}
+
+export function dateRange(sales: Sale[]): { min: string | null; max: string | null } {
+  if (sales.length === 0) return { min: null, max: null };
+  let min = sales[0].date;
+  let max = sales[0].date;
+  for (const s of sales) {
+    if (s.date < min) min = s.date;
+    if (s.date > max) max = s.date;
+  }
+  return { min, max };
+}
+
+export const uniqueProducts = (sales: Sale[]): string[] =>
+  [...new Set(sales.map((s) => s.productName))].sort((a, b) => a.localeCompare(b));
+
+export const uniqueCustomers = (sales: Sale[]): string[] =>
+  [...new Set(sales.map((s) => s.customerId))].sort((a, b) => a.localeCompare(b));
+
+// Client-side equivalents of the backend aggregates, sorted by amount desc.
+export function productTotals(sales: Sale[]): ProductTotal[] {
+  const totals = new Map<string, number>();
+  for (const s of sales) {
+    totals.set(s.productName, (totals.get(s.productName) ?? 0) + s.amount);
+  }
+  return [...totals.entries()]
+    .map(([product, totalAmount]) => ({ product, totalAmount }))
+    .sort((a, b) => b.totalAmount - a.totalAmount);
+}
+
+export function customerTotals(sales: Sale[]): CustomerTotal[] {
+  const totals = new Map<string, number>();
+  for (const s of sales) {
+    totals.set(s.customerId, (totals.get(s.customerId) ?? 0) + s.amount);
+  }
+  return [...totals.entries()]
+    .map(([customerId, totalAmount]) => ({ customerId, totalAmount }))
+    .sort((a, b) => b.totalAmount - a.totalAmount);
+}
