@@ -1,4 +1,4 @@
-# sap-mock/ — Origen de datos simulado
+# backend/mocks/sap/ — Origen de datos simulado (servicio `sap-mock`)
 
 Reglas específicas del mock. Las globales están en el `CLAUDE.md` de la raíz.
 
