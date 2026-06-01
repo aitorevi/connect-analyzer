@@ -10,8 +10,8 @@ type Props = {
   labelFormatter?: (label: string | number) => string;
 };
 
-// Shared custom tooltip so every chart (bar, area, donut) renders the same way and picks
-// up the theme via CSS variables. Recharts injects active/payload/label at runtime.
+// Shared custom tooltip. Handles single-series charts (bar/area/donut) and multi-series
+// ones (the composed revenue+units chart), themed via CSS variables.
 export default function ChartTooltip({
   active,
   payload,
@@ -20,20 +20,26 @@ export default function ChartTooltip({
 }: Props) {
   if (!active || !payload || payload.length === 0) return null;
 
-  const entry = payload[0];
   const title =
     label != null
       ? labelFormatter
         ? labelFormatter(label)
         : String(label)
-      : (entry.name ?? "");
+      : payload.length === 1
+        ? (payload[0].name ?? "")
+        : "";
+
+  const multi = payload.length > 1;
 
   return (
     <div className="chart-tooltip">
       {title && <span className="chart-tooltip__label">{title}</span>}
-      <span className="chart-tooltip__value">
-        {formatAmountFull(Number(entry.value ?? 0))}
-      </span>
+      {payload.map((entry, index) => (
+        <span className="chart-tooltip__value" key={entry.name ?? index}>
+          {multi && <span className="chart-tooltip__name">{entry.name}: </span>}
+          {formatAmountFull(Number(entry.value ?? 0))}
+        </span>
+      ))}
     </div>
   );
 }
