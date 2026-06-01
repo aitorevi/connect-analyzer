@@ -1,13 +1,23 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ByProductChart from "./ByProductChart";
 import ByCustomerChart from "./ByCustomerChart";
-import type { CustomerTotal, DashboardData, ProductTotal } from "../lib/dashboard";
+import RevenueOverTimeChart from "./RevenueOverTimeChart";
+import KpiCards from "./KpiCards";
+import ChartCard from "./ChartCard";
+import { computeKpis, revenueByDate } from "../lib/analytics";
+import type {
+  CustomerTotal,
+  DashboardData,
+  ProductTotal,
+  Sale,
+} from "../lib/dashboard";
 
 type Props = {
   initialByProduct: ProductTotal[];
   initialByCustomer: CustomerTotal[];
+  initialSales: Sale[];
 };
 
 const POLL_INTERVAL_MS = 5000;
@@ -15,20 +25,31 @@ const MAX_ATTEMPTS = 30; // ~2.5 min, covers a free-tier mock + backend cold sta
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Wraps the charts and self-heals the demo: on a free-tier cold start the store is empty
-// until the backend re-seeds from the (also sleeping) mock. If we render with no data, we
-// trigger a refresh and poll until rows appear, instead of leaving a dead "No hay datos".
-export default function Dashboard({ initialByProduct, initialByCustomer }: Props) {
+// Wraps the dashboard and self-heals on a free-tier cold start: when we render with no data
+// (the store is empty until the backend re-seeds from the sleeping mock) we re-trigger a
+// refresh and poll until rows appear, instead of leaving a dead "No hay datos".
+export default function Dashboard({
+  initialByProduct,
+  initialByCustomer,
+  initialSales,
+}: Props) {
   const initialEmpty =
     initialByProduct.length === 0 && initialByCustomer.length === 0;
 
   const [byProduct, setByProduct] = useState(initialByProduct);
   const [byCustomer, setByCustomer] = useState(initialByCustomer);
+  const [sales, setSales] = useState(initialSales);
   const [warming, setWarming] = useState(initialEmpty);
   const [gaveUp, setGaveUp] = useState(false);
   const running = useRef(false);
 
   const hasData = byProduct.length > 0 || byCustomer.length > 0;
+
+  const kpis = useMemo(
+    () => computeKpis(sales, byProduct, byCustomer),
+    [sales, byProduct, byCustomer],
+  );
+  const overTime = useMemo(() => revenueByDate(sales), [sales]);
 
   // Re-triggers an ingestion each round, then checks for rows. On a cold free-tier stack the
   // first refresh 502s (the mock is asleep) but *wakes* it, so a later attempt succeeds — a
@@ -50,6 +71,7 @@ export default function Dashboard({ initialByProduct, initialByCustomer }: Props
           if (data.byProduct.length > 0 || data.byCustomer.length > 0) {
             setByProduct(data.byProduct);
             setByCustomer(data.byCustomer);
+            setSales(data.sales);
             setWarming(false);
             running.current = false;
             return;
@@ -98,14 +120,19 @@ export default function Dashboard({ initialByProduct, initialByCustomer }: Props
         </p>
       )}
 
-      <h2>Total amount by product</h2>
-      <div className="card">
-        <ByProductChart data={byProduct} />
-      </div>
+      <KpiCards kpis={kpis} />
 
-      <h2>Total amount by customer</h2>
-      <div className="card">
-        <ByCustomerChart data={byCustomer} />
+      <ChartCard title="Revenue over time">
+        <RevenueOverTimeChart data={overTime} />
+      </ChartCard>
+
+      <div className="chart-grid">
+        <ChartCard title="Total amount by product">
+          <ByProductChart data={byProduct} />
+        </ChartCard>
+        <ChartCard title="Total amount by customer">
+          <ByCustomerChart data={byCustomer} />
+        </ChartCard>
       </div>
     </>
   );

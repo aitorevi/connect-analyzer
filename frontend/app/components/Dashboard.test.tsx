@@ -26,6 +26,7 @@ describe("Dashboard", () => {
       <Dashboard
         initialByProduct={[{ product: "A", totalAmount: 10 }]}
         initialByCustomer={[{ customerId: "C1", totalAmount: 10 }]}
+        initialSales={[]}
       />,
     );
 
@@ -40,7 +41,9 @@ describe("Dashboard", () => {
       json: async () => ({ byProduct: [], byCustomer: [] }),
     } as Response);
 
-    render(<Dashboard initialByProduct={[]} initialByCustomer={[]} />);
+    render(
+      <Dashboard initialByProduct={[]} initialByCustomer={[]} initialSales={[]} />,
+    );
 
     expect(await screen.findByRole("status")).toHaveTextContent(
       /Calentando la demo/i,
