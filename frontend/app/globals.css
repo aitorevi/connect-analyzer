@@ -1,3 +1,53 @@
+:root {
+  color-scheme: light dark;
+
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --surface-2: #eef1f6;
+  --text: #1a1d29;
+  --text-muted: #6b7280;
+  --border: #e3e6eb;
+  --grid: #eceef3;
+  --accent: #4f46e5;
+
+  /* Chart palette — referenced as var(--chart-N) in SVG fill/stroke so charts follow the
+     theme automatically (incl. dark mode) without any JS. */
+  --chart-1: #6366f1;
+  --chart-2: #0ea5e9;
+  --chart-3: #10b981;
+  --chart-4: #f59e0b;
+  --chart-5: #f43f5e;
+  --chart-6: #8b5cf6;
+
+  --radius: 14px;
+  --radius-sm: 10px;
+  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 6px 20px rgba(16, 24, 40, 0.08);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1117;
+    --surface: #171a23;
+    --surface-2: #1f2330;
+    --text: #e6e8ef;
+    --text-muted: #9aa3b2;
+    --border: #272b38;
+    --grid: #232735;
+    --accent: #818cf8;
+
+    --chart-1: #818cf8;
+    --chart-2: #38bdf8;
+    --chart-3: #34d399;
+    --chart-4: #fbbf24;
+    --chart-5: #fb7185;
+    --chart-6: #a78bfa;
+
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 6px 24px rgba(0, 0, 0, 0.45);
+  }
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -6,34 +56,143 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: #f7f8fa;
-  color: #222;
-  padding: 2rem;
+  background: var(--bg);
+  color: var(--text);
+  padding: 2rem 1.5rem;
+  -webkit-font-smoothing: antialiased;
 }
 
 main {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
-h1 {
-  margin-bottom: 0.5rem;
-}
-
-h2 {
-  margin: 2rem 0 0.75rem;
-  font-size: 1.15rem;
-  color: #444;
-}
-
-.card {
-  background: #fff;
-  border: 1px solid #e3e6eb;
-  border-radius: 8px;
-  padding: 1rem 1.25rem;
+.page-header h1 {
+  font-size: 1.9rem;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.25rem;
 }
 
 .subtitle {
-  color: #666;
-  margin-bottom: 1rem;
+  color: var(--text-muted);
+}
+
+/* Cards ------------------------------------------------------------------ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  padding: 1.1rem 1.25rem;
+}
+
+.chart-card__header {
+  margin-bottom: 0.5rem;
+}
+
+.chart-card__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.chart-card__subtitle {
+  font-size: 0.825rem;
+  color: var(--text-muted);
+}
+
+/* KPI row ---------------------------------------------------------------- */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.kpi:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.kpi__value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kpi__label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Chart grid ------------------------------------------------------------- */
+.chart-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+@media (max-width: 880px) {
+  .chart-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Custom tooltip --------------------------------------------------------- */
+.chart-tooltip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  padding: 0.5rem 0.7rem;
+}
+
+.chart-tooltip__label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.chart-tooltip__value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* States ----------------------------------------------------------------- */
+.empty-state {
+  color: var(--text-muted);
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+button {
+  font: inherit;
+  color: var(--surface);
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.9rem;
+  cursor: pointer;
+}
+
+button:hover {
+  filter: brightness(1.05);
 }

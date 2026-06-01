@@ -1,21 +1,23 @@
 "use client";
 
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
   ResponsiveContainer,
+  Tooltip,
 } from "recharts";
-import { formatAmountCompact, formatAmountFull } from "../lib/format";
+import { useChartTheme } from "../lib/theme";
+import ChartTooltip from "./ChartTooltip";
 
 type Props = {
   data: { customerId: string; totalAmount: number }[];
 };
 
 export default function ByCustomerChart({ data }: Props) {
+  const theme = useChartTheme();
+
   if (data.length === 0) {
     return (
       <p data-testid="empty-by-customer" className="empty-state">
@@ -25,13 +27,28 @@ export default function ByCustomerChart({ data }: Props) {
   }
   return (
     <ResponsiveContainer width="100%" height={320}>
-      <BarChart data={data} margin={{ top: 10, right: 20, bottom: 20, left: 12 }}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="customerId" />
-        <YAxis tickFormatter={formatAmountCompact} />
-        <Tooltip formatter={(v: number) => formatAmountFull(v)} />
-        <Bar dataKey="totalAmount" name="Amount" fill="#0ea5e9" />
-      </BarChart>
+      <PieChart>
+        <Pie
+          data={data}
+          dataKey="totalAmount"
+          nameKey="customerId"
+          innerRadius={68}
+          outerRadius={108}
+          paddingAngle={2}
+          stroke={theme.surface}
+          strokeWidth={2}
+          isAnimationActive={false}
+        >
+          {data.map((entry, index) => (
+            <Cell
+              key={entry.customerId}
+              fill={theme.series[index % theme.series.length]}
+            />
+          ))}
+        </Pie>
+        <Tooltip content={<ChartTooltip />} />
+        <Legend wrapperStyle={{ fontSize: 12, color: theme.axis }} />
+      </PieChart>
     </ResponsiveContainer>
   );
 }
