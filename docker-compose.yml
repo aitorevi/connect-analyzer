@@ -7,7 +7,7 @@ services:
 
   backend:
     build: ./backend
-    container_name: sap-backend
+    container_name: connect-analyzer-backend
     ports:
       - "5080:8080"
     # Pull SalesSource, Sap__* and Shopify__* from the root .env (gitignored). Optional so a
@@ -28,7 +28,7 @@ services:
 
   frontend:
     build: ./frontend
-    container_name: sap-frontend
+    container_name: connect-analyzer-frontend
     ports:
       - "3000:3000"
     environment:

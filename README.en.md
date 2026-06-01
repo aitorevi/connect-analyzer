@@ -1,4 +1,4 @@
-# SAP Analyzer
+# Connect Analyzer
 
 [![CI](https://github.com/aitorevi/connect-analyzer/actions/workflows/ci.yml/badge.svg)](https://github.com/aitorevi/connect-analyzer/actions/workflows/ci.yml)
 
