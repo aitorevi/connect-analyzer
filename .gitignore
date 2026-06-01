@@ -7,10 +7,10 @@
 prompt-*.md
 
 # Datos del mock de SAP
-# Los .txt INVENTADOS de sap-mock/data/ son fixtures y SÍ se commitean.
-# Cualquier dato real (export de SAP) va en sap-mock/data-real/ o sap-mock/private/, NUNCA en git.
-sap-mock/data-real/
-sap-mock/private/
+# Los .txt INVENTADOS de backend/mocks/sap/data/ son fixtures y SÍ se commitean.
+# Cualquier dato real (export de SAP) va en backend/mocks/sap/data-real/ o .../private/, NUNCA en git.
+backend/mocks/sap/data-real/
+backend/mocks/sap/private/
 
 # .NET (backend)
 bin/

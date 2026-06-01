@@ -1,6 +1,6 @@
 services:
   sap-mock:
-    build: ./sap-mock
+    build: ./backend/mocks/sap
     container_name: sap-mock
     ports:
       - "8000:8080"

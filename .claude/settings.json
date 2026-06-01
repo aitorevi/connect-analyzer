@@ -5,8 +5,8 @@
       "Read(./.env)",
       "Read(./.env.*)",
       "Read(./**/.env)",
-      "Read(./sap-mock/data-real/**)",
-      "Read(./sap-mock/private/**)"
+      "Read(./backend/mocks/sap/data-real/**)",
+      "Read(./backend/mocks/sap/private/**)"
     ]
   }
 }
