@@ -164,7 +164,7 @@ Edita los ficheros de `sap-mock/data/` y reconstruye la imagen (`docker compose 
 Si tienes el **.NET 10 SDK** instalado, también puedes correrlos directamente:
 
 ```bash
-cd backend && dotnet test tests/ConnectAnalytics.Tests/ConnectAnalytics.Tests.csproj
+cd backend && dotnet test tests/ConnectAnalyzer.Tests/ConnectAnalyzer.Tests.csproj
 ```
 
 **Frontend**:

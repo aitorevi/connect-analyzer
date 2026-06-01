@@ -1,7 +1,7 @@
-using ConnectAnalytics.Application.Ports;
-using ConnectAnalytics.Domain;
+using ConnectAnalyzer.Application.Ports;
+using ConnectAnalyzer.Domain;
 
-namespace ConnectAnalytics.Application;
+namespace ConnectAnalyzer.Application;
 
 // Reads sales from the local store (not the upstream source): analytics are served from what
 // IngestSales has persisted, decoupling queries from the source's availability.

@@ -29,7 +29,7 @@ data-source boundary sacred: only the outbound adapter behind `ISalesRepository`
 
 ## Mirrored tests (xUnit)
 
-Add tests alongside the layers under `backend/tests/ConnectAnalytics.Tests/`:
+Add tests alongside the layers under `backend/tests/ConnectAnalyzer.Tests/`:
 
 - `Application/SalesAnalyticsTests.cs` — aggregation correctness + failure propagation, using
   `StubSalesRepository.Returning(...)` / `.Failing(error)` from `TestDoubles/`.

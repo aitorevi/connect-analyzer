@@ -1,3 +1,3 @@
-namespace ConnectAnalytics.Domain;
+namespace ConnectAnalyzer.Domain;
 
 public record CustomerTotal(string CustomerId, decimal TotalAmount);

@@ -1,7 +1,7 @@
-using ConnectAnalytics.Application.Ports;
-using ConnectAnalytics.Domain;
+using ConnectAnalyzer.Application.Ports;
+using ConnectAnalyzer.Domain;
 
-namespace ConnectAnalytics.Tests.TestDoubles;
+namespace ConnectAnalyzer.Tests.TestDoubles;
 
 public sealed class StubSalesStore(Result<IReadOnlyList<Sale>> readResult, Error? saveError = null) : ISalesStore
 {

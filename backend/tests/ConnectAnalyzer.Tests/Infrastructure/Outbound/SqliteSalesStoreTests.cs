@@ -1,12 +1,12 @@
-using ConnectAnalytics.Domain;
-using ConnectAnalytics.Infrastructure.Outbound.Sqlite;
+using ConnectAnalyzer.Domain;
+using ConnectAnalyzer.Infrastructure.Outbound.Sqlite;
 using Xunit;
 
-namespace ConnectAnalytics.Tests.Infrastructure.Outbound;
+namespace ConnectAnalyzer.Tests.Infrastructure.Outbound;
 
 public sealed class SqliteSalesStoreTests : IDisposable
 {
-    private readonly string _dbPath = Path.Combine(Path.GetTempPath(), $"connectanalytics-{Guid.NewGuid():N}.db");
+    private readonly string _dbPath = Path.Combine(Path.GetTempPath(), $"connectanalyzer-{Guid.NewGuid():N}.db");
 
     private SqliteSalesStore CreateSut() => new($"Data Source={_dbPath}");
 

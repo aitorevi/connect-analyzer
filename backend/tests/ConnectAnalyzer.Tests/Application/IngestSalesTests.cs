@@ -1,9 +1,9 @@
-using ConnectAnalytics.Application;
-using ConnectAnalytics.Domain;
-using ConnectAnalytics.Tests.TestDoubles;
+using ConnectAnalyzer.Application;
+using ConnectAnalyzer.Domain;
+using ConnectAnalyzer.Tests.TestDoubles;
 using Xunit;
 
-namespace ConnectAnalytics.Tests.Application;
+namespace ConnectAnalyzer.Tests.Application;
 
 public class IngestSalesTests
 {

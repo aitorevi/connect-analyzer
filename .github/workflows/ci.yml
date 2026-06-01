@@ -20,7 +20,7 @@ jobs:
 
       - name: Test
         # Uses the Mock source by default (no secrets needed) and a temp SQLite file per test.
-        run: dotnet test backend/tests/ConnectAnalytics.Tests/ConnectAnalytics.Tests.csproj --verbosity normal
+        run: dotnet test backend/tests/ConnectAnalyzer.Tests/ConnectAnalyzer.Tests.csproj --verbosity normal
 
   frontend:
     name: Frontend (Next.js)

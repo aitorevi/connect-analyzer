@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using ConnectAnalytics.Domain;
+using ConnectAnalyzer.Domain;
 
-namespace ConnectAnalytics.Infrastructure.Inbound.Http;
+namespace ConnectAnalyzer.Infrastructure.Inbound.Http;
 
 public static class ErrorHttpResults
 {

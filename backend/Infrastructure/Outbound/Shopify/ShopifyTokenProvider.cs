@@ -2,9 +2,9 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using ConnectAnalytics.Domain;
+using ConnectAnalyzer.Domain;
 
-namespace ConnectAnalytics.Infrastructure.Outbound.Shopify;
+namespace ConnectAnalyzer.Infrastructure.Outbound.Shopify;
 
 // TODO: react to a future 401 from the data endpoint by invalidating the cached token and
 public sealed class ShopifyTokenProvider(HttpClient http, string clientId, string clientSecret)

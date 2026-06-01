@@ -1,7 +1,7 @@
-using ConnectAnalytics.Domain;
+using ConnectAnalyzer.Domain;
 using Xunit;
 
-namespace ConnectAnalytics.Tests.Domain;
+namespace ConnectAnalyzer.Tests.Domain;
 
 public class ResultExtensionsTests
 {

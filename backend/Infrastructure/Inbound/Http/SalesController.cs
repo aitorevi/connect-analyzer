@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
-using ConnectAnalytics.Application;
+using ConnectAnalyzer.Application;
 
-namespace ConnectAnalytics.Infrastructure.Inbound.Http;
+namespace ConnectAnalyzer.Infrastructure.Inbound.Http;
 
 [ApiController]
 [Route("api/sales")]
