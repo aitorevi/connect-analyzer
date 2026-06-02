@@ -34,7 +34,7 @@ gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregi
 gcloud run deploy connect-analyzer-mock \
   --source backend/mocks/sap \
   --region europe-southwest1 \
-  --port 8080 --allow-unauthenticated
+  --port 8080 --allow-unauthenticated --max-instances 3
 
 # Grab its URL
 MOCK_URL=$(gcloud run services describe connect-analyzer-mock \
@@ -44,9 +44,11 @@ MOCK_URL=$(gcloud run services describe connect-analyzer-mock \
 gcloud run deploy connect-analyzer-api \
   --source backend \
   --region europe-southwest1 \
-  --port 8080 --allow-unauthenticated \
+  --port 8080 --allow-unauthenticated --max-instances 3 \
   --set-env-vars "SalesSource=Mock,SapMock__BaseUrl=${MOCK_URL},Sqlite__Path=/tmp/sales.db"
 ```
+
+`--max-instances 3` caps the cost/DoS blast radius of the public, unauthenticated services.
 
 Smoke-test (URLs are printed by the deploys / `gcloud run services describe`):
 
@@ -94,3 +96,24 @@ Cors__AllowedOrigins__0 = https://<your-frontend>.vercel.app
 ```
 
 Never widen to `AllowAnyOrigin`.
+
+## Security notes
+
+The demo serves **fictitious data** over a **public, unauthenticated** API (Cloud Run
+`--allow-unauthenticated`). Residual risks and how they're handled:
+
+- **Cost / DoS abuse** → `--max-instances 3` caps scaling, and a **billing budget alert** is set
+  on the project. Reading `/api/sales*` only exposes the demo dataset.
+- **`POST /api/sales/refresh`** (re-ingestion) can be protected with a token: set
+  `Refresh__Token=<random>` on the `connect-analyzer-api` service, then callers must send a matching
+  `X-Refresh-Token` header (constant-time compared). Left unset, the endpoint stays open (demo
+  default). The frontend never calls it.
+- **Real SAP/Shopify secrets** → use **Secret Manager + `--set-secrets`** instead of plain
+  `--set-env-vars`, so the values aren't visible in the service config:
+  ```bash
+  gcloud secrets create sap-api-key --data-file=- <<< "<your-key>"
+  gcloud run services update connect-analyzer-api --region europe-southwest1 \
+    --update-secrets Sap__ApiKey=sap-api-key:latest
+  ```
+- App errors return **sanitized** `ProblemDetails` (no internal/upstream messages); the real detail
+  is logged server-side. SQLite access is parameterized; HTTPS is enforced by Cloud Run.

@@ -20,7 +20,8 @@ gcloud run deploy "$MOCK_SERVICE" \
   --source backend/mocks/sap \
   --region "$REGION" \
   --port 8080 \
-  --allow-unauthenticated
+  --allow-unauthenticated \
+  --max-instances 3
 
 MOCK_URL="$(gcloud run services describe "$MOCK_SERVICE" --region "$REGION" --format='value(status.url)')"
 echo "✔ Mock en: $MOCK_URL"
@@ -31,6 +32,7 @@ gcloud run deploy "$API_SERVICE" \
   --region "$REGION" \
   --port 8080 \
   --allow-unauthenticated \
+  --max-instances 3 \
   --set-env-vars "SalesSource=Mock,SapMock__BaseUrl=${MOCK_URL},Sqlite__Path=/tmp/sales.db"
 
 API_URL="$(gcloud run services describe "$API_SERVICE" --region "$REGION" --format='value(status.url)')"
