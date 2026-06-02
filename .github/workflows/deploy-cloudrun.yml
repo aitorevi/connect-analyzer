@@ -1,0 +1,55 @@
+name: Deploy to Cloud Run
+
+# Auto-deploys backend + mock to Cloud Run on changes to backend/ (incl. the mock),
+# plus a manual "Run workflow" button. Auth is keyless via Workload Identity Federation
+# (no service-account key stored as a secret). Requires these repo variables:
+#   GCP_PROJECT, GCP_REGION, GCP_WIF_PROVIDER, GCP_DEPLOY_SA
+on:
+  push:
+    branches: [main]
+    paths: ["backend/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # required for Workload Identity Federation
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ vars.GCP_PROJECT }}
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SA }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy mock
+        run: |
+          gcloud run deploy connect-analyzer-mock \
+            --source backend/mocks/sap \
+            --project "${{ vars.GCP_PROJECT }}" \
+            --region "${{ vars.GCP_REGION }}" \
+            --port 8080 --allow-unauthenticated --max-instances 3 --quiet
+
+      - name: Resolve mock URL
+        id: mock
+        run: |
+          url=$(gcloud run services describe connect-analyzer-mock \
+            --project "${{ vars.GCP_PROJECT }}" --region "${{ vars.GCP_REGION }}" \
+            --format='value(status.url)')
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy backend
+        run: |
+          gcloud run deploy connect-analyzer-api \
+            --source backend \
+            --project "${{ vars.GCP_PROJECT }}" \
+            --region "${{ vars.GCP_REGION }}" \
+            --port 8080 --allow-unauthenticated --max-instances 3 --quiet \
+            --update-env-vars "SalesSource=Mock,SapMock__BaseUrl=${{ steps.mock.outputs.url }},Sqlite__Path=/tmp/sales.db"
