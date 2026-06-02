@@ -1,25 +1,23 @@
+import sampleSales from "./sample-sales.json";
+
 export type ProductTotal = { product: string; totalAmount: number };
 export type CustomerTotal = { customerId: string; totalAmount: number };
 export type Sale = {
-  date: string; // ISO "YYYY-MM-DD"
+  date: string;
   customerId: string;
   productName: string;
   quantity: number;
   amount: number;
 };
-// The dashboard derives every aggregate client-side from the raw sales (so filters can
-// recompute them), so a single fetch of the raw sales is all it needs.
+
 export type DashboardData = {
   sales: Sale[];
 };
 
-const EMPTY: DashboardData = { sales: [] };
+const SAMPLE: DashboardData = { sales: sampleSales as Sale[] };
 
 const backendUrl = () => process.env.BACKEND_URL ?? "http://localhost:5080";
 
-// Server-side fetch of both aggregates. Never throws: on a cold/unreachable backend it
-// resolves to empty arrays so the page can render and the client can warm the demo up.
-// The timeout keeps SSR from hanging on a sleeping free-tier backend.
 export async function fetchDashboard(timeoutMs = 6000): Promise<DashboardData> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -28,17 +26,16 @@ export async function fetchDashboard(timeoutMs = 6000): Promise<DashboardData> {
       cache: "no-store",
       signal: controller.signal,
     });
-    if (!res.ok) return EMPTY;
-    return { sales: await res.json() };
+    if (!res.ok) return SAMPLE;
+    const sales: Sale[] = await res.json();
+    return sales.length > 0 ? { sales } : SAMPLE;
   } catch {
-    return EMPTY;
+    return SAMPLE;
   } finally {
     clearTimeout(timer);
   }
 }
 
-// Triggers a re-ingestion on the backend. Used to self-heal the demo when the store is
-// empty (free-tier cold start). Never throws; returns whether the refresh succeeded.
 export async function triggerRefresh(timeoutMs = 90000): Promise<boolean> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);

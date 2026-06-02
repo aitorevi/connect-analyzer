@@ -12,19 +12,18 @@ real de SAP.
 
 ## Demo en vivo
 
-| Pieza        | URL                                                     | Hosting    |
-|--------------|---------------------------------------------------------|------------|
-| Dashboard    | <https://connect-analyzer.vercel.app>                   | Vercel     |
-| Backend API  | <https://connect-analyzer-api.onrender.com>             | Render     |
-| Mock SAP     | <https://connect-analyzer-mock.onrender.com>            | Render     |
+**Dashboard:** <https://connect-analyzer.vercel.app> (Vercel — siempre activo, carga instantánea).
 
-> El tier gratuito de Render duerme los servicios tras ~15 min sin tráfico, así que la **primera
-> carga puede tardar ~30-50 s** (cold-start). Recargar es instantáneo. El backend reintenta el
-> seed-on-startup con backoff para autocurarse cuando el mock también está despertando.
+La demo es **autosuficiente**: el frontend trae un dataset de ejemplo embebido
+(`frontend/app/lib/sample-sales.json`, las fixtures del mock) y **calcula todos los agregados en
+cliente**, así que **no depende de ningún backend** ni sufre cold-starts. El backend .NET y el mock
+son el producto real pero **opcionales** para la demo; si quieres datos en vivo (incl. SAP/Shopify),
+se conecta vía la env var `BACKEND_URL` y, si no responde, el frontend cae al dataset embebido.
 
+- **Cómo está montada la demo** (front, datos, backend opcional): ver [`DEMO.md`](./DEMO.md).
 - **Caso de estudio**: [Post en aitorevi.dev](https://aitorevi.dev/blog/sap-analyzer) — por qué hexagonal,
   patrón `Result`/`Error`, adaptador SAP real y persistencia con SQLite.
-- **Cómo desplegarlo de cero**: ver [`DEPLOY.md`](./DEPLOY.md) (Render Blueprint + Vercel, sin tarjeta).
+- **Cómo desplegar el backend de cero**: ver [`DEPLOY.md`](./DEPLOY.md) (Render Blueprint + Vercel, sin tarjeta).
 
 ## Arquitectura
 
@@ -146,7 +145,8 @@ npm run lint                     # eslint
 ```
 
 - `BACKEND_URL` — URL del backend (en Docker: `http://backend:8080`; en local por defecto
-  `http://localhost:5080`; en Vercel apunta a `https://connect-analyzer-api.onrender.com`).
+  `http://localhost:5080`). **Opcional**: si no se alcanza (o está vacío, como en la demo de
+  Vercel), el frontend usa el dataset embebido (`sample-sales.json`). Ver [`DEMO.md`](./DEMO.md).
 
 ### Mock (nginx)
 

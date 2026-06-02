@@ -1,0 +1,177 @@
+[
+    {
+        "date": "2026-01-02",
+        "customerId": "C001",
+        "productName": "Caf\u00e9 Molido",
+        "quantity": 10,
+        "amount": 125.5
+    },
+    {
+        "date": "2026-01-02",
+        "customerId": "C002",
+        "productName": "T\u00e9 Verde",
+        "quantity": 5,
+        "amount": 42.75
+    },
+    {
+        "date": "2026-01-03",
+        "customerId": "C001",
+        "productName": "Galletas",
+        "quantity": 20,
+        "amount": 80.0
+    },
+    {
+        "date": "2026-01-03",
+        "customerId": "C003",
+        "productName": "Jam\u00f3n Serrano",
+        "quantity": 2,
+        "amount": 95.2
+    },
+    {
+        "date": "2026-01-04",
+        "customerId": "C002",
+        "productName": "Caf\u00e9 Molido",
+        "quantity": 8,
+        "amount": 100.4
+    },
+    {
+        "date": "2026-01-04",
+        "customerId": "C004",
+        "productName": "Lim\u00f3n",
+        "quantity": 15,
+        "amount": 22.5
+    },
+    {
+        "date": "2026-01-05",
+        "customerId": "C001",
+        "productName": "Aceite",
+        "quantity": 6,
+        "amount": 78.0
+    },
+    {
+        "date": "2026-01-05",
+        "customerId": "C005",
+        "productName": "T\u00e9 Verde",
+        "quantity": 10,
+        "amount": 85.5
+    },
+    {
+        "date": "2026-01-06",
+        "customerId": "C003",
+        "productName": "Caf\u00e9 Molido",
+        "quantity": 12,
+        "amount": 150.6
+    },
+    {
+        "date": "2026-01-06",
+        "customerId": "C002",
+        "productName": "Galletas",
+        "quantity": 25,
+        "amount": 100.0
+    },
+    {
+        "date": "2026-01-07",
+        "customerId": "C004",
+        "productName": "Jam\u00f3n Serrano",
+        "quantity": 3,
+        "amount": 142.8
+    },
+    {
+        "date": "2026-01-07",
+        "customerId": "C001",
+        "productName": "Lim\u00f3n",
+        "quantity": 20,
+        "amount": 30.0
+    },
+    {
+        "date": "2026-01-08",
+        "customerId": "C005",
+        "productName": "Aceite",
+        "quantity": 4,
+        "amount": 52.0
+    },
+    {
+        "date": "2026-01-08",
+        "customerId": "C002",
+        "productName": "Caf\u00e9 Molido",
+        "quantity": 6,
+        "amount": 75.3
+    },
+    {
+        "date": "2026-01-09",
+        "customerId": "C003",
+        "productName": "T\u00e9 Verde",
+        "quantity": 8,
+        "amount": 68.4
+    },
+    {
+        "date": "2026-01-09",
+        "customerId": "C001",
+        "productName": "Galletas",
+        "quantity": 15,
+        "amount": 60.0
+    },
+    {
+        "date": "2026-01-10",
+        "customerId": "C004",
+        "productName": "Caf\u00e9 Molido",
+        "quantity": 9,
+        "amount": 112.95
+    },
+    {
+        "date": "2026-01-10",
+        "customerId": "C005",
+        "productName": "Lim\u00f3n",
+        "quantity": 18,
+        "amount": 27.0
+    },
+    {
+        "date": "2026-01-11",
+        "customerId": "C002",
+        "productName": "Jam\u00f3n Serrano",
+        "quantity": 1,
+        "amount": 47.6
+    },
+    {
+        "date": "2026-01-11",
+        "customerId": "C003",
+        "productName": "Aceite",
+        "quantity": 7,
+        "amount": 91.0
+    },
+    {
+        "date": "2026-01-12",
+        "customerId": "C001",
+        "productName": "T\u00e9 Verde",
+        "quantity": 6,
+        "amount": 51.3
+    },
+    {
+        "date": "2026-01-12",
+        "customerId": "C004",
+        "productName": "Galletas",
+        "quantity": 10,
+        "amount": 40.0
+    },
+    {
+        "date": "2026-01-13",
+        "customerId": "C005",
+        "productName": "Caf\u00e9 Molido",
+        "quantity": 11,
+        "amount": 138.05
+    },
+    {
+        "date": "2026-01-13",
+        "customerId": "C002",
+        "productName": "Lim\u00f3n",
+        "quantity": 12,
+        "amount": 18.0
+    },
+    {
+        "date": "2026-01-14",
+        "customerId": "C003",
+        "productName": "Aceite",
+        "quantity": 5,
+        "amount": 65.0
+    }
+]
