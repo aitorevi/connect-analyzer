@@ -17,8 +17,8 @@ problema de "no hay datos". Se eliminaron los workarounds del frontend.
 | Pieza | Hosting | Notas |
 |-------|---------|-------|
 | Frontend (Next.js) | **Vercel** · `frontend/` | Siempre activo. Auto-deploy en cada push a `main`. `connect-analyzer.vercel.app`. |
-| Backend (.NET 10) | **Cloud Run** · servicio `connect-analyzer-api` | Lee del mock, agrega y sirve la API REST. URL asignada al desplegar. |
-| Mock (nginx) | **Cloud Run** · servicio `connect-analyzer-mock` | Sirve `sales.txt` (fixtures). URL asignada al desplegar. |
+| Backend (.NET 10) | **Cloud Run** · `connect-analyzer-api` | Lee del mock, agrega y sirve la API REST. <https://connect-analyzer-api-370913301749.europe-southwest1.run.app> |
+| Mock (nginx) | **Cloud Run** · `connect-analyzer-mock` | Sirve `sales.txt` (fixtures). <https://connect-analyzer-mock-370913301749.europe-southwest1.run.app> |
 
 ## Cómo coge los datos
 

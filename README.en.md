@@ -14,8 +14,8 @@ more analyses, filters, and only later real persistence and a real SAP source.
 | Piece        | Hosting             | URL                                            |
 |--------------|---------------------|------------------------------------------------|
 | Dashboard    | Vercel              | <https://connect-analyzer.vercel.app>          |
-| Backend API  | Google Cloud Run    | `connect-analyzer-api` (URL assigned on deploy) |
-| Mock SAP     | Google Cloud Run    | `connect-analyzer-mock` (URL assigned on deploy) |
+| Backend API  | Google Cloud Run    | <https://connect-analyzer-api-370913301749.europe-southwest1.run.app> |
+| Mock SAP     | Google Cloud Run    | <https://connect-analyzer-mock-370913301749.europe-southwest1.run.app> |
 
 The frontend (Vercel) fetches the backend **server-side**; the backend runs on **Cloud Run**, reads
 the mock and computes the analytics, and the dashboard derives KPIs/series/filters on the client.

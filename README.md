@@ -15,8 +15,8 @@ real de SAP.
 | Pieza        | Hosting                | URL                                          |
 |--------------|------------------------|----------------------------------------------|
 | Dashboard    | Vercel                 | <https://connect-analyzer.vercel.app>        |
-| Backend API  | Google Cloud Run       | `connect-analyzer-api` (URL asignada al desplegar) |
-| Mock SAP     | Google Cloud Run       | `connect-analyzer-mock` (URL asignada al desplegar) |
+| Backend API  | Google Cloud Run       | <https://connect-analyzer-api-370913301749.europe-southwest1.run.app> |
+| Mock SAP     | Google Cloud Run       | <https://connect-analyzer-mock-370913301749.europe-southwest1.run.app> |
 
 El frontend (Vercel) hace fetch **server-side** del backend en **Cloud Run**, que lee del mock y
 calcula la analítica; el dashboard deriva KPIs/series/filtros en cliente. Cloud Run arranca en ~1-2 s
