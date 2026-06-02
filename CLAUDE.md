@@ -56,7 +56,9 @@ implementa ese puerto.
 
 - **Todo el stack**: `docker compose up --build` (desde la raíz).
 - **Tests backend**: `./scripts/test-backend.sh` (dotnet test dockerizado, no requiere SDK local).
+  Cobertura: `dotnet test --collect:"XPlat Code Coverage"` (coverlet, salida Cobertura).
 - **Frontend**: `cd frontend && npm run dev` | `npm run build` | `npm run lint` | `npm run test:run`.
+  Cobertura: `npm run test:coverage` (vitest + v8; informe en `frontend/coverage/`).
 
 ## Gotchas conocidos (transversales)
 
