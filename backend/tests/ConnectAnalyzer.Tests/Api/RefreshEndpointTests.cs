@@ -23,17 +23,7 @@ public class RefreshEndpointTests
     public async Task Refresh_IngestsFromSourceIntoStoreAndReturnsCount()
     {
         var store = StubSalesStore.Containing(); // starts empty
-        using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
-        {
-            builder.UseEnvironment("Testing");
-            builder.ConfigureServices(services =>
-            {
-                services.RemoveAll(typeof(ISalesRepository));
-                services.AddSingleton<ISalesRepository>(new FakeSalesRepository());
-                services.RemoveAll(typeof(ISalesStore));
-                services.AddSingleton<ISalesStore>(store);
-            });
-        });
+        using var factory = CreateFactory(store, refreshToken: null);
         var client = factory.CreateClient();
 
         var response = await client.PostAsync("/api/sales/refresh", content: null);
@@ -44,6 +34,46 @@ public class RefreshEndpointTests
         Assert.NotNull(store.LastSaved);
         Assert.Equal(3, store.LastSaved!.Count);
     }
+
+    [Fact]
+    public async Task Refresh_WithTokenConfigured_RejectsRequestWithoutMatchingHeader()
+    {
+        using var factory = CreateFactory(StubSalesStore.Containing(), refreshToken: "s3cret");
+        var client = factory.CreateClient();
+
+        var response = await client.PostAsync("/api/sales/refresh", content: null);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Refresh_WithTokenConfigured_AcceptsMatchingHeader()
+    {
+        using var factory = CreateFactory(StubSalesStore.Containing(), refreshToken: "s3cret");
+        var client = factory.CreateClient();
+        var request = new HttpRequestMessage(HttpMethod.Post, "/api/sales/refresh");
+        request.Headers.Add("X-Refresh-Token", "s3cret");
+
+        var response = await client.SendAsync(request);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    private static WebApplicationFactory<Program> CreateFactory(
+        StubSalesStore store, string? refreshToken) =>
+        new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
+        {
+            builder.UseEnvironment("Testing");
+            if (refreshToken is not null)
+                builder.UseSetting("Refresh:Token", refreshToken);
+            builder.ConfigureServices(services =>
+            {
+                services.RemoveAll(typeof(ISalesRepository));
+                services.AddSingleton<ISalesRepository>(new FakeSalesRepository());
+                services.RemoveAll(typeof(ISalesStore));
+                services.AddSingleton<ISalesStore>(store);
+            });
+        });
 
     private record RefreshResponse(int Ingested);
 
