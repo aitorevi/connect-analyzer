@@ -27,13 +27,10 @@ import type { DashboardData, Sale } from "../lib/dashboard";
 type Props = { initialSales: Sale[] };
 
 const POLL_INTERVAL_MS = 5000;
-const MAX_ATTEMPTS = 30; // ~2.5 min, covers a free-tier mock + backend cold start
+const MAX_ATTEMPTS = 30;
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Owns the raw sales + filter state and derives every aggregate client-side, so the date
-// range and product/customer filters recompute the whole dashboard consistently. Also
-// self-heals on a free-tier cold start (re-trigger refresh + poll until rows appear).
 export default function Dashboard({ initialSales }: Props) {
   const initialEmpty = initialSales.length === 0;
 
@@ -72,7 +69,6 @@ export default function Dashboard({ initialSales }: Props) {
       try {
         await fetch("/api/dashboard", { method: "POST" });
       } catch {
-        // ignore — the GET below decides whether we have data
       }
       try {
         const res = await fetch("/api/dashboard", { cache: "no-store" });
@@ -86,7 +82,6 @@ export default function Dashboard({ initialSales }: Props) {
           }
         }
       } catch {
-        // keep polling — a cold backend may still be waking up
       }
       await delay(POLL_INTERVAL_MS);
     }
@@ -97,13 +92,10 @@ export default function Dashboard({ initialSales }: Props) {
   }, []);
 
   useEffect(() => {
-    // Mount only: if SSR already delivered data we never warm up. Deferred so the async
-    // work starts outside the effect body (no synchronous state update on mount).
     if (!initialEmpty) return;
     const id = setTimeout(poll, 0);
     return () => clearTimeout(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [initialEmpty, poll]);
 
   return (
     <>

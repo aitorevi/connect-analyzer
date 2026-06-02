@@ -58,10 +58,16 @@ In the Vercel dashboard: **Add New… → Project → Import the GitHub repo `ai
 
 - **Root Directory**: `frontend` (the Next.js app lives in this subfolder).
 - **Framework Preset**: Next.js (auto-detected).
-- **Environment Variables**:
-  - `BACKEND_URL` = `https://connect-analyzer-api.onrender.com`
+- **Environment Variables** — `BACKEND_URL` is **optional**:
+  - **Leave it unset** (recommended) → the dashboard serves its bundled sample data
+    (`frontend/app/lib/sample-sales.json`): instant, always-on, no backend needed. See [`DEMO.md`](./DEMO.md).
+  - Or set `BACKEND_URL` = your backend URL (e.g. `https://connect-analyzer-api.onrender.com`) to
+    use live data; the frontend falls back to the bundled data if it's unreachable.
 
 Click **Deploy**. Vercel builds with `next build` and serves the dashboard.
+
+> The backend (steps 1) is **not required** for the demo — the frontend is self-sufficient. Deploy
+> it only if you want live data (incl. real SAP/Shopify) behind the dashboard.
 
 ## 3. Optional: lock CORS to your Vercel origin
 
