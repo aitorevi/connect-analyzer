@@ -22,7 +22,7 @@ the mock and computes the analytics, and the dashboard derives KPIs/series/filte
 Cloud Run starts in ~1-2 s with the request waiting (no "no data" cold start like Render). The
 frontend points at the backend via the `BACKEND_URL` env var.
 
-- **Case study**: [Post on aitorevi.dev](https://aitorevi.dev/en/blog/sap-analyzer) — why hexagonal,
+- **Case study**: [Post on aitorevi.dev](https://aitorevi.dev/en/blog/connect-analyzer) — why hexagonal,
   the `Result`/`Error` pattern, the real SAP adapter and the SQLite persistence layer.
 - **Deploy from scratch**: see [`DEPLOY.md`](./DEPLOY.md) (Google Cloud Run + Vercel).
 
@@ -219,7 +219,7 @@ The mock mimics a real SAP export, so its files follow its quirks:
 ## Further reading
 
 - [`DEPLOY.md`](./DEPLOY.md) — how to deploy the live demo (Google Cloud Run + Vercel).
-- [Blog post on aitorevi.dev](https://aitorevi.dev/en/blog/sap-analyzer) — case study: why hexagonal,
+- [Blog post on aitorevi.dev](https://aitorevi.dev/en/blog/connect-analyzer) — case study: why hexagonal,
   the `Result`/`Error` pattern, the real SAP adapter and the SQLite persistence layer.
 - [`CLAUDE.md`](./CLAUDE.md) — working guide (global rules; each piece has its own `CLAUDE.md`).
 - [`DEUDA-TECNICA.md`](./DEUDA-TECNICA.md) — technical-debt log.

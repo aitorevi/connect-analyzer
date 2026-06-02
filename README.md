@@ -24,7 +24,7 @@ con la petición esperando (sin el cold-start de "no hay datos" que daba Render)
 al backend con la env var `BACKEND_URL`.
 
 - **Cómo está montada la demo** (front, datos, backend): ver [`DEMO.md`](./DEMO.md).
-- **Caso de estudio**: [Post en aitorevi.dev](https://aitorevi.dev/blog/sap-analyzer) — por qué hexagonal,
+- **Caso de estudio**: [Post en aitorevi.dev](https://aitorevi.dev/blog/connect-analyzer) — por qué hexagonal,
   patrón `Result`/`Error`, adaptador SAP real y persistencia con SQLite.
 - **Cómo desplegar el backend de cero**: ver [`DEPLOY.md`](./DEPLOY.md) (Google Cloud Run + Vercel).
 
@@ -229,7 +229,7 @@ El mock imita un export real de SAP, así que sus ficheros siguen sus rarezas:
 ## Documentación adicional
 
 - [`DEPLOY.md`](./DEPLOY.md) — cómo desplegar la demo en vivo (Google Cloud Run + Vercel).
-- [Post en aitorevi.dev](https://aitorevi.dev/blog/sap-analyzer) — caso de estudio: por qué hexagonal,
+- [Post en aitorevi.dev](https://aitorevi.dev/blog/connect-analyzer) — caso de estudio: por qué hexagonal,
   el patrón `Result`/`Error`, el adaptador SAP real y la persistencia con SQLite.
 - [`CLAUDE.md`](./CLAUDE.md) — guía de trabajo (reglas globales; cada pieza tiene su propio `CLAUDE.md`).
 - [`DEUDA-TECNICA.md`](./DEUDA-TECNICA.md) — registro de deuda técnica.
