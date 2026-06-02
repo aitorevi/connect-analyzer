@@ -8,7 +8,6 @@ using ConnectAnalyzer.Domain;
 
 namespace ConnectAnalyzer.Infrastructure.Outbound.Shopify;
 
-// TODO: paginate via the Link header's `rel="next"` cursor. The MVP fetches a single page of
 public sealed class ShopifyOrdersRepository(
     HttpClient http,
     ShopifyTokenProvider tokens,
@@ -39,7 +38,6 @@ public sealed class ShopifyOrdersRepository(
                 return Result<IReadOnlyList<Sale>>.Failure(Error.Unauthorized(
                     "Shopify rejected the Admin API token (it may have been revoked or lack the required scopes)."));
 
-            // TODO: respect Retry-After header on 429 instead of failing immediately.
             if ((int)response.StatusCode == 429)
                 return Result<IReadOnlyList<Sale>>.Failure(Error.Unavailable(
                     "Shopify rate limit hit."));

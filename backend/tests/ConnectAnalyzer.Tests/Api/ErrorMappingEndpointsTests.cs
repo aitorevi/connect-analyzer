@@ -15,6 +15,7 @@ public class ErrorMappingEndpointsTests
     [Theory]
     [InlineData(ErrorType.NotFound, HttpStatusCode.NotFound)]
     [InlineData(ErrorType.Validation, HttpStatusCode.BadRequest)]
+    [InlineData(ErrorType.Unauthorized, HttpStatusCode.Unauthorized)]
     [InlineData(ErrorType.Unavailable, HttpStatusCode.BadGateway)]
     [InlineData(ErrorType.Unexpected, HttpStatusCode.InternalServerError)]
     public async Task Failure_IsTranslatedToItsHttpStatus(ErrorType type, HttpStatusCode expected)

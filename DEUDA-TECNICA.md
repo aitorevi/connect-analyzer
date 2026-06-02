@@ -67,7 +67,7 @@ solo lee la primera página de `orders.json` (`limit=250`).
 - **Cuándo abordarla:** antes de apuntar a una tienda con más de 250 pedidos relevantes. La
   paginación de la Admin REST se hace por la cabecera `Link: <…>; rel="next"`; hay que
   iterar siguiendo ese cursor y respetar el rate-limit (40 calls/app/store en buckets de
-  leaky-bucket). Misma iteración que el TODO de `Retry-After` en 429.
+  leaky-bucket), respetando `Retry-After` cuando devuelva 429.
 
 ### 6. Refresco proactivo del token de Shopify
 
@@ -109,6 +109,16 @@ No hay middleware de manejo de errores en [`Program.cs`](backend/Program.cs).
 - **Cuándo abordarla:** al desplegar, añadir manejo de errores consistente y asegurar que
   `ASPNETCORE_ENVIRONMENT` nunca es `Development` en entornos accesibles.
 
+### 9. Paginación del adaptador SAP
+
+[`SapODataSalesRepository`](backend/Infrastructure/Outbound/Sap/SapODataSalesRepository.cs) pide
+una sola página del OData (`$top=200`), sin seguir `__next`.
+
+- **Por qué se pospone:** la sandbox del Business Accelerator Hub devuelve un dataset acotado;
+  200 ítems bastan para validar el flujo end-to-end del MVP.
+- **Cuándo abordarla:** al apuntar a un S/4HANA real con más volumen. OData v2 pagina por el
+  enlace `d.__next`; hay que iterar siguiéndolo (análogo a la paginación de Shopify, #5).
+
 ---
 
-_Última revisión: 2026-05-24._
+_Última revisión: 2026-06-02._

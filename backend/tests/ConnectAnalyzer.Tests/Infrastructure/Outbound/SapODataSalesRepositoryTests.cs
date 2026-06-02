@@ -119,6 +119,18 @@ public class SapODataSalesRepositoryTests
         Assert.Equal(ErrorType.Unavailable, FailureError(result).Type);
     }
 
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized)]
+    [InlineData(HttpStatusCode.Forbidden)]
+    public async Task ReturnsUnauthorizedWhenSapRejectsTheApiKey(HttpStatusCode status)
+    {
+        var sut = CreateSut("ignored", status);
+
+        var result = await sut.SearchAsync();
+
+        Assert.Equal(ErrorType.Unauthorized, FailureError(result).Type);
+    }
+
     [Fact]
     public async Task ReturnsUnavailableFailureWhenSourceIsUnreachable()
     {

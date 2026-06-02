@@ -111,11 +111,10 @@ app.UseCors("AllowFrontend");
 app.MapControllers();
 
 // Seed the local store from the configured source on startup so the dashboard isn't empty on
-// first load. Runs in the background with retries: on free-tier hosting the upstream source can
-// take 30-60 s to wake up from a cold start, longer than the HttpClient default, so the first
-// attempt frequently lands while the source is still returning 502/timeouts. Retries with backoff
-// let the store self-heal without blocking app.Run(). Skipped under "Testing" (integration tests
-// wire their own store). POST /api/sales/refresh remains available as a manual retry.
+// first load. Runs in the background with a short backoff to ride out a transient startup race
+// (e.g. the mock waking a second after the backend on Cloud Run), without blocking app.Run().
+// Skipped under "Testing" (integration tests wire their own store). POST /api/sales/refresh
+// remains available as a manual retry.
 if (!app.Environment.IsEnvironment("Testing"))
 {
     _ = Task.Run(async () =>
@@ -123,10 +122,8 @@ if (!app.Environment.IsEnvironment("Testing"))
         TimeSpan[] backoffs =
         [
             TimeSpan.Zero,
-            TimeSpan.FromSeconds(5),
-            TimeSpan.FromSeconds(15),
-            TimeSpan.FromSeconds(30),
-            TimeSpan.FromSeconds(60),
+            TimeSpan.FromSeconds(3),
+            TimeSpan.FromSeconds(10),
         ];
 
         var logger = app.Services.GetRequiredService<ILogger<Program>>();
