@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 type Props = {
   label: string;
@@ -13,6 +13,13 @@ export default function MultiSelect({ label, options, selected, onChange }: Prop
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const ref = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const panelId = useId();
+
+  const close = () => {
+    setOpen(false);
+    buttonRef.current?.focus();
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -20,7 +27,7 @@ export default function MultiSelect({ label, options, selected, onChange }: Prop
       if (ref.current && !ref.current.contains(event.target as Node)) setOpen(false);
     };
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") close();
     };
     document.addEventListener("pointerdown", onPointerDown);
     document.addEventListener("keydown", onKey);
@@ -45,9 +52,12 @@ export default function MultiSelect({ label, options, selected, onChange }: Prop
   return (
     <div className="multiselect" ref={ref}>
       <button
+        ref={buttonRef}
         type="button"
         className="multiselect__button"
+        aria-haspopup="true"
         aria-expanded={open}
+        aria-controls={panelId}
         onClick={() => setOpen((v) => !v)}
       >
         {label}
@@ -57,7 +67,7 @@ export default function MultiSelect({ label, options, selected, onChange }: Prop
       </button>
 
       {open && (
-        <div className="multiselect__panel" role="listbox" aria-label={label}>
+        <div className="multiselect__panel" id={panelId} aria-label={label}>
           <input
             type="search"
             className="multiselect__search"

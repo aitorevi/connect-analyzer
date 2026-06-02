@@ -8,7 +8,7 @@ export default async function Page() {
     <main>
       <header className="page-header">
         <h1>Connect Analyzer</h1>
-        <p className="subtitle">Prototype with simulated sales data.</p>
+        <p className="subtitle">Prototipo con datos de ventas simulados.</p>
       </header>
 
       <Dashboard sales={sales} />

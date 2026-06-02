@@ -75,15 +75,15 @@ export default function Dashboard({ sales }: Props) {
         salesTrend={salesCount.map((d) => d.count)}
       />
 
-      <ChartCard title="Revenue over time">
+      <ChartCard title="Ingresos en el tiempo">
         <RevenueOverTimeChart data={overTime} />
       </ChartCard>
 
       <div className="chart-grid">
-        <ChartCard title="Revenue & units by product">
+        <ChartCard title="Ingresos y unidades por producto">
           <ProductRevenueUnitsChart data={productData} />
         </ChartCard>
-        <ChartCard title="Total amount by customer">
+        <ChartCard title="Importe total por cliente">
           <ByCustomerChart data={byCustomer} />
         </ChartCard>
       </div>
