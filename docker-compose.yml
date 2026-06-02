@@ -21,7 +21,7 @@ services:
       - SapMock__BaseUrl=http://sap-mock:8080
       # The image runs as the non-root $APP_UID user (see backend/Dockerfile); /app belongs to
       # root so the SQLite file cannot live there. /tmp is world-writable on the dotnet/aspnet
-      # image. Matches render.yaml's production path.
+      # image. Matches the Cloud Run production path.
       - Sqlite__Path=/tmp/sales.db
     depends_on:
       - sap-mock

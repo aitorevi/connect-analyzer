@@ -1,92 +1,96 @@
 # Deploy
 
-End-to-end deployment of the live demo: **backend + mock on [Render](https://render.com)** (Free tier,
-no credit card required), **frontend on [Vercel](https://vercel.com)**. Since the frontend (`page.tsx`)
-fetches the backend server-side, the demo flow is `Vercel (Next.js Server Component) → Render (backend)
-→ Render (mock)` and **no browser CORS is involved**.
+End-to-end deployment of the live demo: **backend + mock on [Google Cloud Run](https://cloud.google.com/run)**
+(free tier, no cold-start of the "no data" kind), **frontend on [Vercel](https://vercel.com)**. The
+frontend (`page.tsx`) fetches the backend server-side, so the flow is
+`Vercel (Next.js Server Component) → Cloud Run (backend) → Cloud Run (mock)` and **no browser CORS is
+involved**.
+
+> Why Cloud Run instead of Render: Render's free Web Services sleep after ~15 min and return 502 while
+> waking, which left the demo blank. Cloud Run scales to zero too, but cold starts are ~1-2 s and the
+> request **waits** for the container instead of failing — so the demo just works.
 
 ## Prerequisites
 
-- A Render account (sign in with GitHub, no card needed for the Free plan).
-- A Vercel account (same).
-- (Optional, only for real SAP data) A free API key from the
+- The `gcloud` CLI installed and authenticated (`gcloud auth login`).
+- A Google Cloud project with billing enabled (the Cloud Run free tier covers this demo).
+- A Vercel account.
+- (Optional, only for real SAP data) a free API key from the
   [SAP Business Accelerator Hub](https://api.sap.com).
 
-## 1. Deploy backend + mock with one Render Blueprint
+## 1. Deploy backend + mock to Cloud Run
 
-The repo ships a [`render.yaml`](./render.yaml) Blueprint that declares both Web Services.
-
-1. Go to <https://dashboard.render.com> → **New +** → **Blueprint**.
-2. Connect your GitHub account and pick the `aitorevi/connect-analyzer` repository.
-3. Render reads `render.yaml`, shows the two services it is about to create
-   (`connect-analyzer-mock` and `connect-analyzer-api`, Free plan, Frankfurt) → **Apply**.
-4. The first build takes ~5 min per service. Watch the logs from each service page.
-
-Render assigns:
-- Mock: `https://connect-analyzer-mock.onrender.com` (or a suffix if that name is taken).
-- API:  `https://connect-analyzer-api.onrender.com`
-
-> If Render had to suffix the mock name, edit `SapMock__BaseUrl` in the **connect-analyzer-api**
-> service's environment to the actual mock hostname, then **Manual Deploy** → **Clear build cache & deploy**.
-
-### Smoke-test
+Both pieces ship a Dockerfile and listen on `8080`. `gcloud run deploy --source <dir>` builds the
+image with Cloud Build and deploys it. Run the steps below (or use
+[`scripts/deploy-cloudrun.sh`](./scripts/deploy-cloudrun.sh), which does the two deploys and wires
+`SapMock__BaseUrl` for you).
 
 ```bash
-curl -s https://connect-analyzer-mock.onrender.com/sales.txt | head -3
-curl -s https://connect-analyzer-api.onrender.com/api/sales | head
-curl -X POST https://connect-analyzer-api.onrender.com/api/sales/refresh   # forces re-ingestion
+# Once: select the project and enable the APIs
+gcloud config set project <YOUR_PROJECT_ID>
+gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com
+
+# 1a. Mock (nginx serving the pipe-delimited Latin-1 .txt)
+gcloud run deploy connect-analyzer-mock \
+  --source backend/mocks/sap \
+  --region europe-southwest1 \
+  --port 8080 --allow-unauthenticated
+
+# Grab its URL
+MOCK_URL=$(gcloud run services describe connect-analyzer-mock \
+  --region europe-southwest1 --format='value(status.url)')
+
+# 1b. Backend (.NET 10), pointed at the mock, SQLite in /tmp (ephemeral, re-seeded on start)
+gcloud run deploy connect-analyzer-api \
+  --source backend \
+  --region europe-southwest1 \
+  --port 8080 --allow-unauthenticated \
+  --set-env-vars "SalesSource=Mock,SapMock__BaseUrl=${MOCK_URL},Sqlite__Path=/tmp/sales.db"
 ```
 
-The first call may take 30-50 s if the service was sleeping (Free Web Services nap after ~15 min
-without traffic).
+Smoke-test (URLs are printed by the deploys / `gcloud run services describe`):
 
-### Optional: switch to real SAP data
+```bash
+curl -s <mock-url>/sales.txt | head -3
+curl -s <api-url>/api/sales | head
+curl -s <api-url>/api/sales/by-product
+```
 
-By default the backend uses the mock (`SalesSource=Mock`). To pull from the real SAP S/4HANA OData
-sandbox instead, in the **connect-analyzer-api** service:
+### Optional: real SAP / Shopify instead of the mock
 
-1. **Environment** tab → set `Sap__ApiKey` (Secret) to your Business Accelerator Hub key.
-2. Change `SalesSource` to `Sap`.
-3. **Manual Deploy** → **Deploy latest commit**.
+Set `SalesSource` and the matching secrets on the `connect-analyzer-api` service (then it redeploys):
 
-> The `Sap__ApiKey` variable is declared in `render.yaml` with `sync: false`, so Render does NOT
-> populate it from the Blueprint — you must set it manually in the dashboard. Never commit the key.
+```bash
+# SAP
+gcloud run services update connect-analyzer-api --region europe-southwest1 \
+  --set-env-vars SalesSource=Sap --set-env-vars Sap__ApiKey=<your-key>
+# Shopify
+gcloud run services update connect-analyzer-api --region europe-southwest1 \
+  --set-env-vars SalesSource=Shopify \
+  --set-env-vars Shopify__StoreUrl=<url>,Shopify__ClientId=<id>,Shopify__ClientSecret=<secret>
+```
+
+(For real secrets, prefer Secret Manager + `--set-secrets` over `--set-env-vars`.)
 
 ## 2. Deploy the frontend (Vercel)
 
 In the Vercel dashboard: **Add New… → Project → Import the GitHub repo `aitorevi/connect-analyzer`**.
 
-- **Root Directory**: `frontend` (the Next.js app lives in this subfolder).
+- **Root Directory**: `frontend`.
 - **Framework Preset**: Next.js (auto-detected).
-- **Environment Variables** — `BACKEND_URL` is **optional**:
-  - **Leave it unset** (recommended) → the dashboard serves its bundled sample data
-    (`frontend/app/lib/sample-sales.json`): instant, always-on, no backend needed. See [`DEMO.md`](./DEMO.md).
-  - Or set `BACKEND_URL` = your backend URL (e.g. `https://connect-analyzer-api.onrender.com`) to
-    use live data; the frontend falls back to the bundled data if it's unreachable.
+- **Environment Variables**: `BACKEND_URL` = the `connect-analyzer-api` Cloud Run URL (from step 1b).
 
-Click **Deploy**. Vercel builds with `next build` and serves the dashboard.
-
-> The backend (steps 1) is **not required** for the demo — the frontend is self-sufficient. Deploy
-> it only if you want live data (incl. real SAP/Shopify) behind the dashboard.
+Click **Deploy**. The frontend fetches the backend server-side and renders the dashboard; the
+client derives KPIs/series and applies the filters.
 
 ## 3. Optional: lock CORS to your Vercel origin
 
-`page.tsx` fetches the backend **server-side**, so the browser never calls the backend directly — CORS
-is not exercised today. If you later add a client-side fetch, restrict the backend's CORS origin in the
-**connect-analyzer-api** service environment:
+`page.tsx` fetches the backend **server-side**, so the browser never calls the backend directly —
+CORS is not exercised today. If you later add a client-side fetch, restrict the backend's CORS origin
+on the `connect-analyzer-api` service:
 
 ```
 Cors__AllowedOrigins__0 = https://<your-frontend>.vercel.app
 ```
 
 Never widen to `AllowAnyOrigin`.
-
-## Cold-start note
-
-The free Render Web Services sleep after ~15 min of inactivity. The first request after that
-cold-starts in 30-50 s. Two ways to mitigate if it matters for the demo:
-
-- Visit the URL yourself a few seconds before showing it to someone (the dashboard `page.tsx` does
-  two fetches that warm both backend and mock in one go).
-- Set up a tiny cron pinger (UptimeRobot, cron-job.org, etc.) hitting `/api/sales` every ~10 min.
-  Still on the free plan; just gentle keep-alive traffic.

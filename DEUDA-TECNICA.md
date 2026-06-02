@@ -82,7 +82,7 @@ cachea el access token durante la vida del proceso y no reacciona a 401 del endp
 
 ### 7. SQLite del backend vive en `/tmp` _(prioridad media)_
 
-`docker-compose.yml` y `render.yaml` apuntan `Sqlite__Path` a `/tmp/sales.db` porque la
+`docker-compose.yml` y el despliegue en Cloud Run apuntan `Sqlite__Path` a `/tmp/sales.db` porque la
 imagen `dotnet/aspnet:10.0` corre como `$APP_UID` (no-root) desde el commit
 `7d621bf` y `/app` (el `WORKDIR`) pertenece a root, así que el adaptador no puede
 crear el fichero ahí. `/tmp` es escribible por cualquier usuario pero **se borra al
@@ -97,7 +97,7 @@ reiniciar el contenedor**, lo que tira la persistencia ingerida.
   - Volumen Docker dedicado (`volumes: - sales-db:/var/lib/connect-analyzer`) y
     `Sqlite__Path=/var/lib/connect-analyzer/sales.db`, ajustando ownership en el
     Dockerfile (`mkdir … && chown $APP_UID`).
-  - En Render, cambiar a un disco persistente del servicio en vez de `/tmp`.
+  - En Cloud Run, montar un volumen (p.ej. un bucket GCS o Cloud SQL) en vez de `/tmp`.
 - **Detectado:** durante la verificación end-to-end del MVP de Shopify (2026-05-31).
 
 ### 8. Manejo global de excepciones

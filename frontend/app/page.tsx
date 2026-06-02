@@ -11,7 +11,7 @@ export default async function Page() {
         <p className="subtitle">Prototype with simulated sales data.</p>
       </header>
 
-      <Dashboard initialSales={sales} />
+      <Dashboard sales={sales} />
     </main>
   );
 }

@@ -12,18 +12,21 @@ real de SAP.
 
 ## Demo en vivo
 
-**Dashboard:** <https://connect-analyzer.vercel.app> (Vercel — siempre activo, carga instantánea).
+| Pieza        | Hosting                | URL                                          |
+|--------------|------------------------|----------------------------------------------|
+| Dashboard    | Vercel                 | <https://connect-analyzer.vercel.app>        |
+| Backend API  | Google Cloud Run       | <https://connect-analyzer-api-370913301749.europe-southwest1.run.app> |
+| Mock SAP     | Google Cloud Run       | <https://connect-analyzer-mock-370913301749.europe-southwest1.run.app> |
 
-La demo es **autosuficiente**: el frontend trae un dataset de ejemplo embebido
-(`frontend/app/lib/sample-sales.json`, las fixtures del mock) y **calcula todos los agregados en
-cliente**, así que **no depende de ningún backend** ni sufre cold-starts. El backend .NET y el mock
-son el producto real pero **opcionales** para la demo; si quieres datos en vivo (incl. SAP/Shopify),
-se conecta vía la env var `BACKEND_URL` y, si no responde, el frontend cae al dataset embebido.
+El frontend (Vercel) hace fetch **server-side** del backend en **Cloud Run**, que lee del mock y
+calcula la analítica; el dashboard deriva KPIs/series/filtros en cliente. Cloud Run arranca en ~1-2 s
+con la petición esperando (sin el cold-start de "no hay datos" que daba Render). El frontend apunta
+al backend con la env var `BACKEND_URL`.
 
-- **Cómo está montada la demo** (front, datos, backend opcional): ver [`DEMO.md`](./DEMO.md).
+- **Cómo está montada la demo** (front, datos, backend): ver [`DEMO.md`](./DEMO.md).
 - **Caso de estudio**: [Post en aitorevi.dev](https://aitorevi.dev/blog/sap-analyzer) — por qué hexagonal,
   patrón `Result`/`Error`, adaptador SAP real y persistencia con SQLite.
-- **Cómo desplegar el backend de cero**: ver [`DEPLOY.md`](./DEPLOY.md) (Render Blueprint + Vercel, sin tarjeta).
+- **Cómo desplegar el backend de cero**: ver [`DEPLOY.md`](./DEPLOY.md) (Google Cloud Run + Vercel).
 
 ## Arquitectura
 
@@ -58,7 +61,7 @@ Tres piezas, cada una en su carpeta, orquestadas con **Docker Compose** en local
 - **Fuente real**: adaptador OData contra el sandbox del [SAP Business Accelerator Hub](https://api.sap.com).
 - **Frontend**: **Next.js 16** + **TypeScript** (App Router) + **Recharts**. Tests con **Vitest** + React Testing Library.
 - **Mock**: **nginx** sirviendo ficheros estáticos.
-- **Orquestación**: **Docker** + **Docker Compose** (local), **Render** + **Vercel** (demo en vivo).
+- **Orquestación**: **Docker** + **Docker Compose** (local), **Google Cloud Run** (backend + mock) + **Vercel** (demo en vivo).
 
 ## Requisitos previos
 
@@ -86,7 +89,7 @@ Para parar: `Ctrl+C`, o `docker compose down` para eliminar los contenedores.
 
 ## API
 
-Base local: `http://localhost:5080` · Producción: `https://connect-analyzer-api.onrender.com`
+Base local: `http://localhost:5080` · Producción: backend en Google Cloud Run (ver [`DEPLOY.md`](./DEPLOY.md)).
 
 | Método | Endpoint                  | Respuesta                                                                       |
 |--------|---------------------------|---------------------------------------------------------------------------------|
@@ -129,7 +132,7 @@ Configuración por variables de entorno / `appsettings` (ver también [`.env.exa
 - `Shopify__ClientSecret` — **secreto**, solo si `SalesSource=Shopify`. Se intercambia por un access
   token vía Client Credentials Grant. Localmente: `dotnet user-secrets set "Shopify:ClientSecret" "<tu-secret>"`.
 - `Shopify__ApiVersion` — versión de la Admin API (por defecto `2025-01`).
-- `Sqlite__Path` — ruta del fichero SQLite (por defecto `sales.db`; en Render y en Docker Compose
+- `Sqlite__Path` — ruta del fichero SQLite (por defecto `sales.db`; en Cloud Run y en Docker Compose
   usamos `/tmp/sales.db` porque el backend corre como usuario no-root).
 - `Cors__AllowedOrigins__0` — orígenes permitidos para el navegador (por defecto `http://localhost:3000`).
   **Nunca** ampliar a `AllowAnyOrigin`.
@@ -145,8 +148,8 @@ npm run lint                     # eslint
 ```
 
 - `BACKEND_URL` — URL del backend (en Docker: `http://backend:8080`; en local por defecto
-  `http://localhost:5080`). **Opcional**: si no se alcanza (o está vacío, como en la demo de
-  Vercel), el frontend usa el dataset embebido (`sample-sales.json`). Ver [`DEMO.md`](./DEMO.md).
+  `http://localhost:5080`; en Vercel, la URL del backend en Cloud Run). El frontend lee de aquí en
+  SSR; si el backend no responde, se muestra el error boundary. Ver [`DEMO.md`](./DEMO.md).
 
 ### Mock (nginx)
 
@@ -198,10 +201,10 @@ npm run test                     # modo watch
 ├── frontend/                             # Next.js (App Router) + Recharts
 │   └── app/                              #   page.tsx (Server Component) + components/
 ├── scripts/test-backend.sh               # runner de tests del backend (dockerizado)
+├── scripts/deploy-cloudrun.sh            # despliegue de backend + mock en Cloud Run
 ├── docker-compose.yml                    # orquestación local de las tres piezas
-├── render.yaml                           # Blueprint de Render (backend + mock)
 ├── .github/workflows/ci.yml              # CI en GitHub Actions
-├── DEPLOY.md                             # cómo desplegar la demo (Render + Vercel)
+├── DEPLOY.md                             # cómo desplegar la demo (Cloud Run + Vercel)
 ├── .env.example                          # variables de entorno documentadas
 ├── CLAUDE.md                             # guía para Claude Code (+ CLAUDE.md por pieza)
 └── DEUDA-TECNICA.md                      # registro de deuda técnica
@@ -225,7 +228,7 @@ El mock imita un export real de SAP, así que sus ficheros siguen sus rarezas:
 
 ## Documentación adicional
 
-- [`DEPLOY.md`](./DEPLOY.md) — cómo desplegar la demo en vivo (Render Blueprint + Vercel).
+- [`DEPLOY.md`](./DEPLOY.md) — cómo desplegar la demo en vivo (Google Cloud Run + Vercel).
 - [Post en aitorevi.dev](https://aitorevi.dev/blog/sap-analyzer) — caso de estudio: por qué hexagonal,
   el patrón `Result`/`Error`, el adaptador SAP real y la persistencia con SQLite.
 - [`CLAUDE.md`](./CLAUDE.md) — guía de trabajo (reglas globales; cada pieza tiene su propio `CLAUDE.md`).
