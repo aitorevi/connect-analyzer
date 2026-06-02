@@ -74,14 +74,52 @@ main {
   gap: 1.25rem;
 }
 
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 0.95rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.page-header__mark {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, var(--chart-1), var(--chart-2));
+  color: #fff;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  box-shadow: var(--shadow-md);
+}
+
 .page-header h1 {
-  font-size: 1.9rem;
-  letter-spacing: -0.02em;
-  margin-bottom: 0.25rem;
+  font-size: 1.95rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
 }
 
 .subtitle {
   color: var(--text-muted);
+  font-size: 0.92rem;
+  margin-top: 0.2rem;
+}
+
+@media (max-width: 520px) {
+  .page-header__mark {
+    width: 40px;
+    height: 40px;
+    font-size: 0.95rem;
+  }
+
+  .page-header h1 {
+    font-size: 1.6rem;
+  }
 }
 
 .card {

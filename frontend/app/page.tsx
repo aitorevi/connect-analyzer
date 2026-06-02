@@ -7,8 +7,11 @@ export default async function Page() {
   return (
     <main>
       <header className="page-header">
-        <h1>Connect Analyzer</h1>
-        <p className="subtitle">Prototipo con datos de ventas simulados.</p>
+        <span className="page-header__mark" aria-hidden="true">CA</span>
+        <div className="page-header__text">
+          <h1>Connect Analyzer</h1>
+          <p className="subtitle">Prototipo con datos de ventas simulados.</p>
+        </div>
       </header>
 
       <Dashboard sales={sales} />
