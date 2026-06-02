@@ -23,10 +23,10 @@ describe("KpiCards", () => {
       />,
     );
 
-    expect(screen.getByText("Total revenue")).toBeInTheDocument();
+    expect(screen.getByText("Ingresos totales")).toBeInTheDocument();
     expect(screen.getByText("1,234.5")).toBeInTheDocument();
     expect(screen.getByText("42")).toBeInTheDocument();
-    expect(screen.getByText("Customers")).toBeInTheDocument();
-    expect(screen.getByText("Products")).toBeInTheDocument();
+    expect(screen.getByText("Clientes")).toBeInTheDocument();
+    expect(screen.getByText("Productos")).toBeInTheDocument();
   });
 });

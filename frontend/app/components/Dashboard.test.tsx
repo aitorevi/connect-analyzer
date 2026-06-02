@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import Dashboard from "./Dashboard";
 import type { Sale } from "../lib/dashboard";
@@ -33,5 +33,17 @@ describe("Dashboard", () => {
 
     expect(screen.getByTestId("by-product")).toHaveTextContent("2");
     expect(screen.getByTestId("by-customer")).toHaveTextContent("2");
+  });
+
+  it("shows the empty-filter state when the date range excludes all sales", () => {
+    render(<Dashboard sales={[sale("A", "C1")]} />);
+
+    fireEvent.change(screen.getByLabelText("Desde"), {
+      target: { value: "2027-01-01" },
+    });
+
+    expect(
+      screen.getByText(/No hay ventas para los filtros seleccionados/i),
+    ).toBeInTheDocument();
   });
 });
