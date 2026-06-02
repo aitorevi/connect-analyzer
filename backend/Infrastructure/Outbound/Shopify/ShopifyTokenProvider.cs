@@ -6,7 +6,6 @@ using ConnectAnalyzer.Domain;
 
 namespace ConnectAnalyzer.Infrastructure.Outbound.Shopify;
 
-// TODO: react to a future 401 from the data endpoint by invalidating the cached token and
 public sealed class ShopifyTokenProvider(HttpClient http, string clientId, string clientSecret)
 {
     private readonly SemaphoreSlim _gate = new(1, 1);

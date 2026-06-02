@@ -29,4 +29,16 @@ public class ErrorHttpResultsTests
         Assert.Equal(StatusCodes.Status404NotFound, problem.Status);
         Assert.Equal("customer C999 not found", problem.Detail);
     }
+
+    [Fact]
+    public void ToActionResult_DoesNotLeakInternalDetailForServerErrors()
+    {
+        var result = ErrorHttpResults.ToActionResult(
+            Error.Unavailable("Could not reach the SAP data source: raw 401 text"));
+
+        var objectResult = Assert.IsType<ObjectResult>(result);
+        var problem = Assert.IsType<ProblemDetails>(objectResult.Value);
+        Assert.Equal(StatusCodes.Status502BadGateway, problem.Status);
+        Assert.DoesNotContain("raw 401 text", problem.Detail!);
+    }
 }

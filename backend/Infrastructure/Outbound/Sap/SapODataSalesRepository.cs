@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using ConnectAnalyzer.Application.Ports;
@@ -18,9 +19,21 @@ public sealed class SapODataSalesRepository(HttpClient http) : ISalesRepository
 
     public async Task<Result<IReadOnlyList<Sale>>> SearchAsync(CancellationToken ct = default)
     {
+        ct.ThrowIfCancellationRequested();
         try
         {
-            var json = await http.GetStringAsync(SalesItemsResource, ct);
+            using var response = await http.GetAsync(SalesItemsResource, ct);
+
+            // A bad/missing API key is an auth problem (401), not the source being down (502).
+            if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+                return Result<IReadOnlyList<Sale>>.Failure(
+                    Error.Unauthorized("SAP rejected the API key (check Sap:ApiKey)."));
+
+            if (!response.IsSuccessStatusCode)
+                return Result<IReadOnlyList<Sale>>.Failure(
+                    Error.Unavailable($"The SAP data source returned {(int)response.StatusCode}."));
+
+            var json = await response.Content.ReadAsStringAsync(ct);
             var payload = JsonSerializer.Deserialize<ODataResponse>(json, JsonOptions);
 
             IReadOnlyList<Sale> sales = (payload?.D?.Results ?? [])
@@ -39,6 +52,11 @@ public sealed class SapODataSalesRepository(HttpClient http) : ISalesRepository
         {
             return Result<IReadOnlyList<Sale>>.Failure(
                 Error.Unexpected($"Malformed OData payload from the SAP data source: {ex.Message}"));
+        }
+        catch (OperationCanceledException) when (!ct.IsCancellationRequested)
+        {
+            return Result<IReadOnlyList<Sale>>.Failure(
+                Error.Unavailable("SAP request timed out."));
         }
     }
     

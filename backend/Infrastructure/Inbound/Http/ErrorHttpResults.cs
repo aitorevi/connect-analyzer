@@ -21,8 +21,18 @@ public static class ErrorHttpResults
         {
             Status = status,
             Title = error.Type.ToString(),
-            Detail = error.Message,
+            Detail = ClientDetail(error),
         };
         return new ObjectResult(problem) { StatusCode = status };
     }
+
+    // Server-side failures carry upstream/infra exception text (SAP/Shopify/SQLite messages); keep
+    // it out of the client response (the controller logs the real detail). Client-facing errors
+    // (NotFound/Validation/Unauthorized) carry intentional, safe domain messages.
+    private static string ClientDetail(Error error) => error.Type switch
+    {
+        ErrorType.Unavailable => "The data source is currently unavailable.",
+        ErrorType.Unexpected => "An unexpected error occurred.",
+        _ => error.Message,
+    };
 }
