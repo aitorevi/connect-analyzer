@@ -1,5 +1,5 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 import Dashboard from "./Dashboard";
 import type { Sale } from "../lib/dashboard";
 
@@ -28,34 +28,10 @@ const sale = (productName: string, customerId: string): Sale => ({
 });
 
 describe("Dashboard", () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
-  it("derives the charts from sales and never warms up when data is present", () => {
-    const fetchSpy = vi.spyOn(globalThis, "fetch");
-
-    render(<Dashboard initialSales={[sale("A", "C1"), sale("B", "C2")]} />);
+  it("derives the charts from the sales it receives", () => {
+    render(<Dashboard sales={[sale("A", "C1"), sale("B", "C2")]} />);
 
     expect(screen.getByTestId("by-product")).toHaveTextContent("2");
     expect(screen.getByTestId("by-customer")).toHaveTextContent("2");
-    expect(screen.queryByRole("status")).not.toBeInTheDocument();
-    expect(fetchSpy).not.toHaveBeenCalled();
-  });
-
-  it("shows a warming message and triggers a refresh when starting empty", async () => {
-    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue({
-      ok: true,
-      json: async () => ({ sales: [] }),
-    } as Response);
-
-    render(<Dashboard initialSales={[]} />);
-
-    expect(await screen.findByRole("status")).toHaveTextContent(
-      /Calentando la demo/i,
-    );
-    await waitFor(() =>
-      expect(fetchSpy).toHaveBeenCalledWith("/api/dashboard", { method: "POST" }),
-    );
   });
 });

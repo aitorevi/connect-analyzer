@@ -11,19 +11,20 @@ more analyses, filters, and only later real persistence and a real SAP source.
 
 ## Live demo
 
-| Piece        | URL                                                     | Hosting    |
-|--------------|---------------------------------------------------------|------------|
-| Dashboard    | <https://connect-analyzer.vercel.app>                   | Vercel     |
-| Backend API  | <https://connect-analyzer-api.onrender.com>             | Render     |
-| Mock SAP     | <https://connect-analyzer-mock.onrender.com>            | Render     |
+| Piece        | Hosting             | URL                                            |
+|--------------|---------------------|------------------------------------------------|
+| Dashboard    | Vercel              | <https://connect-analyzer.vercel.app>          |
+| Backend API  | Google Cloud Run    | `connect-analyzer-api` (URL assigned on deploy) |
+| Mock SAP     | Google Cloud Run    | `connect-analyzer-mock` (URL assigned on deploy) |
 
-> Render's Free tier sleeps services after ~15 min without traffic, so the **first request after that
-> can take ~30-50 s** (cold start). Subsequent loads are instant. The backend retries the seed-on-startup
-> with backoff so it self-heals even while the mock is also waking up.
+The frontend (Vercel) fetches the backend **server-side**; the backend runs on **Cloud Run**, reads
+the mock and computes the analytics, and the dashboard derives KPIs/series/filters on the client.
+Cloud Run starts in ~1-2 s with the request waiting (no "no data" cold start like Render). The
+frontend points at the backend via the `BACKEND_URL` env var.
 
 - **Case study**: [Post on aitorevi.dev](https://aitorevi.dev/en/blog/sap-analyzer) — why hexagonal,
   the `Result`/`Error` pattern, the real SAP adapter and the SQLite persistence layer.
-- **Deploy from scratch**: see [`DEPLOY.md`](./DEPLOY.md) (Render Blueprint + Vercel, no credit card).
+- **Deploy from scratch**: see [`DEPLOY.md`](./DEPLOY.md) (Google Cloud Run + Vercel).
 
 ## Architecture
 
@@ -59,7 +60,7 @@ Three pieces, each in its own folder, orchestrated with **Docker Compose** local
 - **Frontend**: **Next.js 16** + **TypeScript** (App Router) + **Recharts**. Tests with **Vitest** +
   React Testing Library.
 - **Mock**: **nginx** serving static files.
-- **Orchestration**: **Docker** + **Docker Compose** (local), **Render** + **Vercel** (live demo).
+- **Orchestration**: **Docker** + **Docker Compose** (local), **Google Cloud Run** (backend + mock) + **Vercel** (live demo).
 
 ## Prerequisites
 
@@ -87,7 +88,7 @@ To stop: `Ctrl+C`, or `docker compose down` to remove the containers.
 
 ## API
 
-Local base: `http://localhost:5080` · Production: `https://connect-analyzer-api.onrender.com`
+Local base: `http://localhost:5080` · Production: backend on Google Cloud Run (see [`DEPLOY.md`](./DEPLOY.md)).
 
 | Method | Endpoint                  | Response                                                                        |
 |--------|---------------------------|---------------------------------------------------------------------------------|
@@ -123,7 +124,7 @@ Configuration via environment variables / `appsettings` (see also [`.env.example
   Locally: `dotnet user-secrets set "Sap:ApiKey" "<your-key>"`.
 - `Sap__BaseUrl` — base URL of the SAP OData service (defaults to the `API_SALES_ORDER_SRV` sandbox).
 - `SapMock__BaseUrl` — mock URL (in Docker: `http://sap-mock:8080`).
-- `Sqlite__Path` — SQLite file path (defaults to `sales.db`; on Render we use `/tmp/sales.db`).
+- `Sqlite__Path` — SQLite file path (defaults to `sales.db`; on Cloud Run we use `/tmp/sales.db`).
 - `Cors__AllowedOrigins__0` — origins allowed in the browser (defaults to `http://localhost:3000`).
   **Never** widen to `AllowAnyOrigin`.
 
@@ -138,7 +139,8 @@ npm run lint                     # eslint
 ```
 
 - `BACKEND_URL` — backend URL (in Docker: `http://backend:8080`; default `http://localhost:5080`;
-  on Vercel it points to `https://connect-analyzer-api.onrender.com`).
+  on Vercel, the backend's Cloud Run URL). The frontend reads it during SSR; if the backend is
+  unreachable the error boundary is shown.
 
 ### Mock (nginx)
 
@@ -189,10 +191,10 @@ npm run test                     # watch mode
 ├── frontend/                             # Next.js (App Router) + Recharts
 │   └── app/                              #   page.tsx (Server Component) + components/
 ├── scripts/test-backend.sh               # backend test runner (dockerised)
+├── scripts/deploy-cloudrun.sh            # deploy backend + mock to Cloud Run
 ├── docker-compose.yml                    # local orchestration of the three pieces
-├── render.yaml                           # Render Blueprint (backend + mock)
 ├── .github/workflows/ci.yml              # CI on GitHub Actions
-├── DEPLOY.md                             # how to deploy the live demo (Render + Vercel)
+├── DEPLOY.md                             # how to deploy the live demo (Cloud Run + Vercel)
 ├── .env.example                          # documented environment variables
 ├── CLAUDE.md                             # Claude Code guidance (+ a CLAUDE.md per piece)
 └── DEUDA-TECNICA.md                      # technical-debt log
@@ -216,7 +218,7 @@ The mock mimics a real SAP export, so its files follow its quirks:
 
 ## Further reading
 
-- [`DEPLOY.md`](./DEPLOY.md) — how to deploy the live demo (Render Blueprint + Vercel).
+- [`DEPLOY.md`](./DEPLOY.md) — how to deploy the live demo (Google Cloud Run + Vercel).
 - [Blog post on aitorevi.dev](https://aitorevi.dev/en/blog/sap-analyzer) — case study: why hexagonal,
   the `Result`/`Error` pattern, the real SAP adapter and the SQLite persistence layer.
 - [`CLAUDE.md`](./CLAUDE.md) — working guide (global rules; each piece has its own `CLAUDE.md`).

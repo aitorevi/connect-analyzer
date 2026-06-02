@@ -1,92 +1,49 @@
 # Demo en vivo: cómo está montada
 
-Referencia de cómo funciona la demo pública, de dónde salen los datos y cómo usar el backend
-real si hace falta. **Resumen en una frase:** la demo vive **solo en Vercel** y es
-**autosuficiente** (datos de ejemplo embebidos), así que no depende de ningún backend ni sufre
-cold-starts.
+Referencia de cómo funciona la demo pública: qué hay desplegado, de dónde salen los datos y cómo
+usar el backend. **Resumen:** frontend en **Vercel** → backend en **Google Cloud Run** → mock en
+**Cloud Run**. El frontend hace fetch server-side, así que no hay CORS de navegador.
 
-## Decisión: datos embebidos en el frontend
+## Por qué Cloud Run (y no Render)
 
-El dashboard **calcula todos los agregados en cliente** (KPIs, series, by-product, by-customer)
-a partir de las ventas crudas. Eso permitió desacoplar la demo del backend: en vez de depender de
-un servicio .NET + mock que en el tier gratuito **se duermen** (Render free duerme tras ~15 min y
-provocaba el clásico "No hay datos" / 502 al abrir en frío), el frontend trae un **dataset de
-ejemplo embebido** y lo usa directamente.
+Render free dormía el backend y el mock (~15 min) y devolvía 502 al despertar, dejando la demo en
+blanco. Lo intentamos tapar con workarounds en el frontend (auto-heal + datos embebidos), pero la
+solución de raíz fue mover el backend a **Cloud Run**: también escala a cero, pero el arranque en
+frío es ~1-2 s y **la petición espera** al contenedor en vez de fallar. Así la demo carga sin el
+problema de "no hay datos". Se eliminaron los workarounds del frontend.
 
-Resultado: la demo **carga al instante, siempre**, sin Render, sin cold-start, sin servicios que
-mantener despiertos. El backend real sigue existiendo (es el producto), pero es **opcional** para
-la demo.
+## Dónde está desplegado cada pieza
 
-## Dónde está desplegado el frontend
+| Pieza | Hosting | Notas |
+|-------|---------|-------|
+| Frontend (Next.js) | **Vercel** · `frontend/` | Siempre activo. Auto-deploy en cada push a `main`. `connect-analyzer.vercel.app`. |
+| Backend (.NET 10) | **Cloud Run** · servicio `connect-analyzer-api` | Lee del mock, agrega y sirve la API REST. URL asignada al desplegar. |
+| Mock (nginx) | **Cloud Run** · servicio `connect-analyzer-mock` | Sirve `sales.txt` (fixtures). URL asignada al desplegar. |
 
-- **Hosting:** Vercel (siempre activo, sin cold-start).
-- **URL:** <https://connect-analyzer.vercel.app>
-- **Proyecto:** Next.js (App Router) en `frontend/`. Vercel hace auto-deploy en cada push a `main`
-  (root directory = `frontend`).
+## Cómo coge los datos
 
-## Cómo coge los datos de prueba
+1. **SSR**: `frontend/app/page.tsx` llama a `fetchDashboard()` (`frontend/app/lib/dashboard.ts`), que
+   hace `GET <BACKEND_URL>/api/sales` en el servidor. Si el backend no responde, lanza y se muestra
+   el error boundary (`app/error.tsx`).
+2. **Cliente**: `Dashboard` recibe las ventas crudas y **deriva en cliente** KPIs, series, agregados
+   por producto/cliente y aplica los **filtros** (`frontend/app/lib/analytics.ts`). Sin más llamadas
+   al backend: los filtros recalculan sobre las ventas ya cargadas.
+3. **`BACKEND_URL`** (env var de Vercel) apunta al servicio `connect-analyzer-api` de Cloud Run. En
+   local por defecto es `http://localhost:5080`; en Docker Compose, `http://backend:8080`.
 
-1. **Dataset embebido:** `frontend/app/lib/sample-sales.json` — las 25 ventas ficticias del mock
-   (mismas fixtures que `backend/mocks/sap/data/sales.txt`, ya parseadas a JSON).
-2. **`fetchDashboard()`** (`frontend/app/lib/dashboard.ts`) decide la fuente:
-   - Si `BACKEND_URL` apunta a un backend **alcanzable y con datos** → usa esos datos en vivo.
-   - En cualquier otro caso (sin `BACKEND_URL`, backend caído/dormido, respuesta vacía o timeout)
-     → **cae automáticamente al dataset embebido**.
-3. El route handler `frontend/app/api/dashboard/route.ts` (`GET`) reexpone esto al cliente
-   mismo-origen; el componente `Dashboard` deriva KPIs/gráficos del set resultante y aplica los
-   filtros en cliente.
+## El backend: cómo usarlo
 
-**En la demo de Vercel, `BACKEND_URL` está vacío** → siempre sirve el dataset embebido → instantáneo.
-
-### Regenerar el dataset embebido
-
-Si cambian las fixtures del mock y quieres refrescar el JSON embebido, con el backend local
-levantado en Mock:
-
+### En local
 ```bash
-curl -s http://localhost:5080/api/sales | python3 -m json.tool > frontend/app/lib/sample-sales.json
+docker compose up --build      # mock + backend + frontend (frontend en :3000)
 ```
-
-## El backend (opcional): dónde está y cómo usarlo
-
-El backend .NET 10 (`backend/`, arquitectura hexagonal) **no es necesario para la demo**, pero es
-el producto real y se puede usar/desplegar.
-
-### En local (con datos en vivo del mock, SAP o Shopify)
-
-```bash
-docker compose up --build         # levanta sap-mock + backend + frontend
-# frontend en :3000 → BACKEND_URL=http://backend:8080 (lo pone docker-compose)
-```
-
-La fuente se elige con la env var **`SalesSource`** (ver `backend/CLAUDE.md` y `.env.example`):
-
+Fuente de datos por **`SalesSource`** (ver `backend/CLAUDE.md` y `.env.example`):
 - `Mock` (por defecto) — lee el `.txt` del servicio `sap-mock`.
-- `Sap` — OData real del SAP Business Accelerator Hub (requiere el secreto `Sap__ApiKey`).
-- `Shopify` — Admin API real (requiere `Shopify__StoreUrl`, `Shopify__ClientId`,
-  `Shopify__ClientSecret`).
+- `Sap` — OData real del SAP Business Accelerator Hub (secreto `Sap__ApiKey`).
+- `Shopify` — Admin API real (`Shopify__StoreUrl`, `Shopify__ClientId`, `Shopify__ClientSecret`).
 
-Los secretos van en un `.env` en la raíz (gitignored); nunca en git.
+Los secretos van en un `.env` en la raíz (gitignored), nunca en git.
 
-### Conectar la demo a un backend en vivo
-
-Si algún día quieres que la demo de Vercel use un backend real en vez del dataset embebido:
-
-1. Despliega el backend (+ mock si usas `SalesSource=Mock`) — ver [`DEPLOY.md`](./DEPLOY.md)
-   (Render Blueprint). Para SAP/Shopify, configura los secretos en el *Environment* del servicio.
-2. En Vercel, define la env var **`BACKEND_URL`** apuntando a la URL pública del backend y
-   **Redeploy**.
-3. El frontend usará el backend si responde con datos; si no, seguirá cayendo al dataset embebido.
-
-> Aviso: en hosting gratuito (Render) el backend se duerme y la primera petición tarda en
-> despertar. Por eso, para una demo siempre-activa, lo recomendado es **dejar `BACKEND_URL` vacío**
-> y servir el dataset embebido.
-
-## Mapa rápido
-
-| Pieza | Dónde | Necesaria para la demo |
-|-------|-------|------------------------|
-| Frontend (Next.js) | Vercel · `frontend/` | **Sí** |
-| Dataset de ejemplo | `frontend/app/lib/sample-sales.json` | **Sí** (fuente por defecto) |
-| Backend (.NET 10) | local (docker) u opcionalmente Render · `backend/` | No (opcional) |
-| Mock (nginx) | local (docker) u opcionalmente Render · `backend/mocks/sap/` | No (opcional) |
+### Desplegar / actualizar en Cloud Run
+Ver [`DEPLOY.md`](./DEPLOY.md) (pasos `gcloud run deploy` o `scripts/deploy-cloudrun.sh`). Tras
+desplegar, poner `BACKEND_URL` en Vercel con la URL del backend y redeploy.

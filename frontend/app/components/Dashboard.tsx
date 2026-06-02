@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import ProductRevenueUnitsChart from "./ProductRevenueUnitsChart";
 import ByCustomerChart from "./ByCustomerChart";
 import RevenueOverTimeChart from "./RevenueOverTimeChart";
@@ -22,27 +22,14 @@ import {
   uniqueProducts,
   type Filters,
 } from "../lib/analytics";
-import type { DashboardData, Sale } from "../lib/dashboard";
+import type { Sale } from "../lib/dashboard";
 
-type Props = { initialSales: Sale[] };
+type Props = { sales: Sale[] };
 
-const POLL_INTERVAL_MS = 5000;
-const MAX_ATTEMPTS = 30;
-
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-export default function Dashboard({ initialSales }: Props) {
-  const initialEmpty = initialSales.length === 0;
-
-  const [sales, setSales] = useState(initialSales);
+export default function Dashboard({ sales }: Props) {
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
-  const [warming, setWarming] = useState(initialEmpty);
-  const [gaveUp, setGaveUp] = useState(false);
-  const running = useRef(false);
 
-  const hasData = sales.length > 0;
   const active = hasActiveFilters(filters);
-
   const range = useMemo(() => dateRange(sales), [sales]);
   const productOptions = useMemo(() => uniqueProducts(sales), [sales]);
   const customerOptions = useMemo(() => uniqueCustomers(sales), [sales]);
@@ -61,72 +48,19 @@ export default function Dashboard({ initialSales }: Props) {
     [byProduct, filtered],
   );
 
-  const poll = useCallback(async () => {
-    if (running.current) return;
-    running.current = true;
-
-    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-      try {
-        await fetch("/api/dashboard", { method: "POST" });
-      } catch {
-      }
-      try {
-        const res = await fetch("/api/dashboard", { cache: "no-store" });
-        if (res.ok) {
-          const data: DashboardData = await res.json();
-          if (data.sales.length > 0) {
-            setSales(data.sales);
-            setWarming(false);
-            running.current = false;
-            return;
-          }
-        }
-      } catch {
-      }
-      await delay(POLL_INTERVAL_MS);
-    }
-
-    setWarming(false);
-    setGaveUp(true);
-    running.current = false;
-  }, []);
-
-  useEffect(() => {
-    if (!initialEmpty) return;
-    const id = setTimeout(poll, 0);
-    return () => clearTimeout(id);
-  }, [initialEmpty, poll]);
-
   return (
     <>
-      {warming && !hasData && (
-        <p className="subtitle" role="status">
-          Calentando la demo… el backend gratuito de Render tarda ~1 min en arrancar en frío.
-          Reintentando solo.
-        </p>
-      )}
-      {gaveUp && !hasData && (
-        <p className="subtitle" role="alert">
-          La demo sigue arrancando.{" "}
-          <button type="button" onClick={() => { setGaveUp(false); setWarming(true); poll(); }}>
-            Reintentar
-          </button>
-        </p>
-      )}
+      <FilterBar
+        filters={filters}
+        onChange={setFilters}
+        onReset={() => setFilters(EMPTY_FILTERS)}
+        range={range}
+        productOptions={productOptions}
+        customerOptions={customerOptions}
+        active={active}
+      />
 
-      {hasData && (
-        <FilterBar
-          filters={filters}
-          onChange={setFilters}
-          onReset={() => setFilters(EMPTY_FILTERS)}
-          range={range}
-          productOptions={productOptions}
-          customerOptions={customerOptions}
-          active={active}
-        />
-      )}
-
-      {hasData && filtered.length === 0 && (
+      {filtered.length === 0 && (
         <p className="subtitle" role="status">
           No hay ventas para los filtros seleccionados.{" "}
           <button type="button" onClick={() => setFilters(EMPTY_FILTERS)}>
