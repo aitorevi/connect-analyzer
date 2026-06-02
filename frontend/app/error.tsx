@@ -2,9 +2,6 @@
 
 import { useEffect } from "react";
 
-// App Router error boundary. Catches errors thrown by app/page.tsx (e.g. the backend
-// fetch failing) so the dashboard never crashes the UI. Must be a Client Component
-// because Next passes the `reset` callback in.
 type Props = {
   error: Error & { digest?: string };
   reset: () => void;
@@ -12,7 +9,6 @@ type Props = {
 
 export default function Error({ error, reset }: Props) {
   useEffect(() => {
-    // Surface for dev diagnostics. In production this would go to a real logger.
     console.error(error);
   }, [error]);
 

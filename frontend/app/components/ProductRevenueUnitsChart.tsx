@@ -18,8 +18,6 @@ import ChartTooltip from "./ChartTooltip";
 
 type Props = { data: ProductRevenueUnits[] };
 
-// Crosses two metrics: revenue (bars, left axis) and units sold (line, right axis), so a
-// cheap high-volume product reads differently from an expensive low-volume one.
 export default function ProductRevenueUnitsChart({ data }: Props) {
   const theme = useChartTheme();
 

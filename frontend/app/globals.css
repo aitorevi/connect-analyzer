@@ -10,8 +10,6 @@
   --grid: #eceef3;
   --accent: #4f46e5;
 
-  /* Chart palette — referenced as var(--chart-N) in SVG fill/stroke so charts follow the
-     theme automatically (incl. dark mode) without any JS. */
   --chart-1: #6366f1;
   --chart-2: #0ea5e9;
   --chart-3: #10b981;
@@ -80,7 +78,6 @@ main {
   color: var(--text-muted);
 }
 
-/* Cards ------------------------------------------------------------------ */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -104,7 +101,6 @@ main {
   color: var(--text-muted);
 }
 
-/* KPI row ---------------------------------------------------------------- */
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -153,7 +149,6 @@ main {
   margin-top: 0.5rem;
 }
 
-/* Chart grid ------------------------------------------------------------- */
 .chart-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -166,7 +161,6 @@ main {
   }
 }
 
-/* Custom tooltip --------------------------------------------------------- */
 .chart-tooltip {
   display: flex;
   flex-direction: column;
@@ -189,7 +183,6 @@ main {
   color: var(--text);
 }
 
-/* States ----------------------------------------------------------------- */
 .empty-state {
   color: var(--text-muted);
   text-align: center;
@@ -210,7 +203,6 @@ button:hover {
   filter: brightness(1.05);
 }
 
-/* Filter bar ------------------------------------------------------------- */
 .filter-bar {
   display: flex;
   flex-wrap: wrap;
@@ -257,7 +249,6 @@ button:hover {
   cursor: not-allowed;
 }
 
-/* Multi-select ----------------------------------------------------------- */
 .multiselect {
   position: relative;
 }

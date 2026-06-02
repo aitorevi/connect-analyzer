@@ -16,8 +16,6 @@ type Item = {
   color?: string;
 };
 
-// Headline metrics row. Presentational: receives precomputed KPIs and the daily trends
-// for the two cards that show a sparkline.
 export default function KpiCards({ kpis, revenueTrend, salesTrend }: Props) {
   const items: Item[] = [
     {

@@ -2,9 +2,6 @@
 
 import { useSyncExternalStore } from "react";
 
-// Recharts colours are SVG presentation attributes (fill/stroke), where CSS var() does NOT
-// resolve — so we keep concrete palettes here and pick light/dark from prefers-color-scheme.
-// The HTML chrome (cards, tooltip, KPIs) still themes via CSS variables in globals.css.
 export type ChartTheme = {
   series: string[];
   grid: string;
@@ -48,8 +45,6 @@ const getSnapshot = (): boolean =>
 
 const getServerSnapshot = (): boolean => false;
 
-// Subscribes to prefers-color-scheme via an external store — the idiomatic, SSR-safe way
-// (server renders light, client syncs on hydration and live-updates on OS theme change).
 export function useChartTheme(): ChartTheme {
   const dark = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   return dark ? DARK : LIGHT;

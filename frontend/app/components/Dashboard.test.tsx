@@ -3,7 +3,6 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import Dashboard from "./Dashboard";
 import type { Sale } from "../lib/dashboard";
 
-// Stub the charts so the test doesn't depend on Recharts/ResponsiveContainer layout.
 vi.mock("./ProductRevenueUnitsChart", () => ({
   default: ({ data }: { data: unknown[] }) => (
     <div data-testid="by-product">{data.length}</div>
@@ -38,7 +37,6 @@ describe("Dashboard", () => {
 
     render(<Dashboard initialSales={[sale("A", "C1"), sale("B", "C2")]} />);
 
-    // Two distinct products / customers derived from the sales.
     expect(screen.getByTestId("by-product")).toHaveTextContent("2");
     expect(screen.getByTestId("by-customer")).toHaveTextContent("2");
     expect(screen.queryByRole("status")).not.toBeInTheDocument();

@@ -6,7 +6,6 @@ type Props = {
   children: ReactNode;
 };
 
-// Card shell with a header, shared by every chart panel so the layout stays consistent.
 export default function ChartCard({ title, subtitle, children }: Props) {
   return (
     <section className="card chart-card">

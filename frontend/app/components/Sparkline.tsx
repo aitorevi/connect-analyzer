@@ -2,13 +2,10 @@
 
 type Props = {
   values: number[];
-  // A CSS colour (var() works here — it's the `color` property, not an SVG attribute);
-  // the shapes use currentColor so they follow the theme.
   color?: string;
   height?: number;
 };
 
-// Tiny dependency-free trend line for KPI cards. Pure SVG, deterministic, no measurement.
 export default function Sparkline({
   values,
   color = "var(--accent)",

@@ -2,8 +2,6 @@ import { render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import RevenueOverTimeChart from "./RevenueOverTimeChart";
 
-// Recharts' ResponsiveContainer needs real layout dimensions, which jsdom does not
-// compute. Replace it with a fixed-size passthrough so the inner chart tree mounts.
 vi.mock("recharts", async () => {
   const actual = await vi.importActual<typeof import("recharts")>("recharts");
   return {

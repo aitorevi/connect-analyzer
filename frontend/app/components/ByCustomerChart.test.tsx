@@ -2,11 +2,6 @@ import { render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import ByCustomerChart from "./ByCustomerChart";
 
-// Recharts' ResponsiveContainer needs real layout dimensions, which jsdom does not
-// compute. Replace it with a fixed-size passthrough so the inner chart tree mounts
-// without crashing. We don't assert on the SVG output because recharts itself does
-// not render meaningful content in jsdom — instead we verify the component tree
-// mounts and our mock is wired in.
 vi.mock("recharts", async () => {
   const actual = await vi.importActual<typeof import("recharts")>("recharts");
   return {

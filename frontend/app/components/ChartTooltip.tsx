@@ -10,8 +10,6 @@ type Props = {
   labelFormatter?: (label: string | number) => string;
 };
 
-// Shared custom tooltip. Handles single-series charts (bar/area/donut) and multi-series
-// ones (the composed revenue+units chart), themed via CSS variables.
 export default function ChartTooltip({
   active,
   payload,

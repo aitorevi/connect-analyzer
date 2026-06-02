@@ -67,7 +67,3 @@ implementa ese puerto.
 - **Latin-1**: los ficheros del mock son ISO-8859-1, no UTF-8. Bug más típico con datos de SAP. Ver `backend/mocks/sap/CLAUDE.md`.
 - **.NET 10 y auth**: los endpoints de API devuelven **401/403** directamente en lugar de redirigir al login.
   Es lo deseable para una API que sirve datos a un front, pero conviene saberlo si se añade auth.
-
-## Documentación adicional
-
-@plan-proyecto-sap.md

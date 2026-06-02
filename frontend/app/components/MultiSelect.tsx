@@ -9,8 +9,6 @@ type Props = {
   onChange: (next: string[]) => void;
 };
 
-// Compact multi-select dropdown (button + popover with search + checkboxes). Empty
-// selection means "all". No dependencies; closes on outside click / Escape.
 export default function MultiSelect({ label, options, selected, onChange }: Props) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");

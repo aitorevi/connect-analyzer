@@ -21,8 +21,6 @@ export type Kpis = {
   bestDayTotal: number;
 };
 
-// Revenue aggregated by day, sorted ascending — the backend has no time aggregation,
-// so we derive the series client-side from the raw sales (which carry the date).
 export function revenueByDate(sales: Sale[]): DailyRevenue[] {
   const totals = new Map<string, number>();
   for (const sale of sales) {
@@ -33,7 +31,6 @@ export function revenueByDate(sales: Sale[]): DailyRevenue[] {
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
-// Number of sales per day, sorted ascending — feeds the "Sales" sparkline.
 export function salesCountByDate(sales: Sale[]): DailyCount[] {
   const counts = new Map<string, number>();
   for (const sale of sales) {
@@ -44,8 +41,6 @@ export function salesCountByDate(sales: Sale[]): DailyCount[] {
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
-// Revenue (from the backend aggregate) joined with units sold (summed from raw sales),
-// preserving the backend's revenue-desc order. Powers the revenue+units composed chart.
 export function productRevenueUnits(
   byProduct: ProductTotal[],
   sales: Sale[],
@@ -61,8 +56,6 @@ export function productRevenueUnits(
   }));
 }
 
-// Headline numbers for the KPI row. byProduct/byCustomer arrive already sorted desc
-// from the backend, so their first element is the top performer.
 export function computeKpis(
   sales: Sale[],
   byProduct: ProductTotal[],
@@ -92,15 +85,11 @@ export function computeKpis(
   };
 }
 
-// --- Filtering & client-side aggregates -----------------------------------
-// With filters, the backend's precomputed by-product/by-customer would be stale, so the
-// dashboard derives every aggregate from the (filtered) raw sales instead.
-
 export type Filters = {
-  from: string | null; // inclusive ISO date, null = no lower bound
-  to: string | null; // inclusive ISO date, null = no upper bound
-  products: string[]; // empty = all products
-  customers: string[]; // empty = all customers
+  from: string | null;
+  to: string | null;
+  products: string[];
+  customers: string[];
 };
 
 export const EMPTY_FILTERS: Filters = {
@@ -110,7 +99,6 @@ export const EMPTY_FILTERS: Filters = {
   customers: [],
 };
 
-// ISO YYYY-MM-DD compares lexicographically the same as chronologically.
 export function filterSales(sales: Sale[], filters: Filters): Sale[] {
   const products = filters.products.length > 0 ? new Set(filters.products) : null;
   const customers = filters.customers.length > 0 ? new Set(filters.customers) : null;
@@ -149,7 +137,6 @@ export const uniqueProducts = (sales: Sale[]): string[] =>
 export const uniqueCustomers = (sales: Sale[]): string[] =>
   [...new Set(sales.map((s) => s.customerId))].sort((a, b) => a.localeCompare(b));
 
-// Client-side equivalents of the backend aggregates, sorted by amount desc.
 export function productTotals(sales: Sale[]): ProductTotal[] {
   const totals = new Map<string, number>();
   for (const s of sales) {

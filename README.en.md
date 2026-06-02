@@ -195,7 +195,6 @@ npm run test                     # watch mode
 ├── DEPLOY.md                             # how to deploy the live demo (Render + Vercel)
 ├── .env.example                          # documented environment variables
 ├── CLAUDE.md                             # Claude Code guidance (+ a CLAUDE.md per piece)
-├── plan-proyecto-sap.md                  # detailed phase-by-phase plan
 └── DEUDA-TECNICA.md                      # technical-debt log
 ```
 
@@ -221,6 +220,4 @@ The mock mimics a real SAP export, so its files follow its quirks:
 - [Blog post on aitorevi.dev](https://aitorevi.dev/en/blog/sap-analyzer) — case study: why hexagonal,
   the `Result`/`Error` pattern, the real SAP adapter and the SQLite persistence layer.
 - [`CLAUDE.md`](./CLAUDE.md) — working guide (global rules; each piece has its own `CLAUDE.md`).
-- [`plan-proyecto-sap.md`](./plan-proyecto-sap.md) — phased plan (mock → backend → frontend →
-  dockerisation → optional persistence → real SAP → security and deployment).
 - [`DEUDA-TECNICA.md`](./DEUDA-TECNICA.md) — technical-debt log.
